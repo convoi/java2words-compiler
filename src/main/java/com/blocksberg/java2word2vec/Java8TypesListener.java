@@ -265,6 +265,12 @@ public class Java8TypesListener extends Java8BaseListener {
         }
         stringBuilder.append(word).append(" ");
     }
+
+
+    @Override
+    public String toString() {
+        return stringBuilder.toString();
+    }
 }
 
 

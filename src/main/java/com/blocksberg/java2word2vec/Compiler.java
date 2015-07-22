@@ -1,8 +1,5 @@
 package com.blocksberg.java2word2vec;
 
-import com.blocksberg.java2word2vec.grammar.Java8Lexer;
-import com.blocksberg.java2word2vec.grammar.Java8Parser;
-import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -43,14 +40,27 @@ public class Compiler {
         final CommandLine commandLine = parseCommandLine(args);
         final Compiler compiler = new Compiler(commandLine.getOptionValue("o"));
         final List<String> sourceDirs = Arrays.asList(commandLine.getOptionValues("i"));
+
+        ParserFactory parserFactory = createParserFactory(commandLine.getOptionValue("m"));
+        System.out.println("compile " + sourceDirs + " with " + parserFactory.getClass().getSimpleName());
         sourceDirs.forEach(dir -> {
             try {
-                compiler.walk(dir);
+                compiler.walk(dir, parserFactory);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
         compiler.close();
+    }
+
+    private static ParserFactory createParserFactory(String mode) {
+        if (mode == null || mode.equals("java7")) {
+            return new Java7ParserFactory();
+        } else if (mode.equals("java8")) {
+            return new Java8ParserFactory();
+        } else {
+            throw new IllegalArgumentException("there is no mode matching '" + mode + "'");
+        }
     }
 
 
@@ -62,6 +72,8 @@ public class Compiler {
                 ("directories with java files").build());
         options.addOption(Option.builder("h").longOpt("help").hasArg(false).required(false).desc("prints usage")
                 .build());
+        options.addOption(Option.builder("m").longOpt("mode").hasArg(true).required(false).desc("mode: java7 / " +
+                "java8").build());
 
         try {
 
@@ -93,13 +105,13 @@ public class Compiler {
     }
 
 
-    private void walk(String dir) throws IOException {
+    private void walk(String dir, ParserFactory parserFactory) throws IOException {
         final Stream<Path> pathStream = Files
                 .walk(new File(dir).toPath())
                 .filter(p -> p.toString().endsWith(".java"));
         pathStream.forEach(p -> {
             try {
-                compileJava7(p);
+                compile(p, parserFactory);
             } catch (IOException e) {
 
             }
@@ -110,26 +122,14 @@ public class Compiler {
         fileWriter.close();
     }
 
-    private void compile(Path fileToCompile) throws IOException {
-        final Java8TypesListener compiler = new Java8TypesListener();
-        final ParseTree compilationUnit = parse(fileToCompile, new Java8ParserFactory());
+    private void compile(Path fileToCompile, ParserFactory parserFactory) throws IOException {
+        final ParseTreeListener compiler = parserFactory.createTypesListener();
+        final ParseTree compilationUnit = parse(fileToCompile, parserFactory);
 
 
         parseTreeWalker.walk(compiler, compilationUnit);
 
-        fileWriter.append(compiler.getStringBuilder().toString());
-        fileWriter.flush();
-
-    }
-
-    private void compileJava7(Path fileToCompile) throws IOException {
-        final JavaTypesListener compiler = new JavaTypesListener();
-        final ParseTree compilationUnit = parse(fileToCompile, new Java7ParserFactory());
-
-
-        parseTreeWalker.walk(compiler, compilationUnit);
-
-        fileWriter.append(compiler.getStringBuilder().toString());
+        fileWriter.append(compiler.toString());
         fileWriter.flush();
     }
 

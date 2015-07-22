@@ -67,4 +67,9 @@ public class JavaTypesListener extends JavaBaseListener {
     public StringBuilder getStringBuilder() {
         return stringBuilder;
     }
+
+    @Override
+    public String toString() {
+        return stringBuilder.toString();
+    }
 }
