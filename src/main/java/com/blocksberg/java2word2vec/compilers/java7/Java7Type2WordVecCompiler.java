@@ -1,5 +1,7 @@
-package com.blocksberg.java2word2vec;
+package com.blocksberg.java2word2vec.compilers.java7;
 
+import com.blocksberg.java2word2vec.compilers.JavaLangClasses;
+import com.blocksberg.java2word2vec.compilers.TypeCompiler;
 import com.blocksberg.java2word2vec.grammar.JavaBaseListener;
 import com.blocksberg.java2word2vec.grammar.JavaParser;
 
@@ -9,12 +11,12 @@ import java.util.Map;
 /**
  * @author jh
  */
-public class JavaTypesListener extends JavaBaseListener {
+public class Java7Type2WordVecCompiler extends JavaBaseListener implements TypeCompiler {
     private final StringBuilder stringBuilder;
     private String packageName;
     private Map<String, String> imports;
 
-    public JavaTypesListener() {
+    public Java7Type2WordVecCompiler() {
         stringBuilder = new StringBuilder();
         imports = new HashMap<>();
     }
@@ -64,12 +66,13 @@ public class JavaTypesListener extends JavaBaseListener {
 
     }
 
-    public StringBuilder getStringBuilder() {
-        return stringBuilder;
+    @Override
+    public boolean producesOutput() {
+        return true;
     }
 
     @Override
-    public String toString() {
+    public String getOutput() {
         return stringBuilder.toString();
     }
 }

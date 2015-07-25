@@ -1,5 +1,6 @@
-package com.blocksberg.java2word2vec;
+package com.blocksberg.java2word2vec.compilers.java8;
 
+import com.blocksberg.java2word2vec.compilers.TypeCompiler;
 import com.blocksberg.java2word2vec.grammar.Java8BaseListener;
 import com.blocksberg.java2word2vec.grammar.Java8Parser;
 
@@ -12,7 +13,7 @@ import java.util.Optional;
 /**
  * @author jh
  */
-public class Java8TypesListener extends Java8BaseListener {
+public class Java8TypesListener extends Java8BaseListener implements TypeCompiler {
 
     private final StringBuilder stringBuilder;
     private String packageName;
@@ -268,7 +269,12 @@ public class Java8TypesListener extends Java8BaseListener {
 
 
     @Override
-    public String toString() {
+    public boolean producesOutput() {
+        return true;
+    }
+
+    @Override
+    public String getOutput() {
         return stringBuilder.toString();
     }
 }

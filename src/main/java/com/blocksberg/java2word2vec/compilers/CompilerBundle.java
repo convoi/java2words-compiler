@@ -1,18 +1,21 @@
-package com.blocksberg.java2word2vec;
+package com.blocksberg.java2word2vec.compilers;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
+ * Bundles all necessary parts to compile a file.
+ *
  * @author jh
  */
-public interface ParserFactory<T extends Parser> {
+public interface CompilerBundle<T extends Parser> {
 
-    ParseTreeListener createTypesListener();
+    int numberOfPasses();
+
+    TypeCompiler getCompilerInstance(int pass);
 
     Lexer createLexer(CharStream input);
 

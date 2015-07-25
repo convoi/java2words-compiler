@@ -1,14 +1,8 @@
 package com.blocksberg.java2word2vec;
 
-import org.antlr.v4.runtime.CommonTokenFactory;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.UnbufferedCharStream;
-import org.antlr.v4.runtime.atn.PredictionMode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import com.blocksberg.java2word2vec.compilers.CompilerBundle;
+import com.blocksberg.java2word2vec.compilers.java7.Java7CompilerBundle;
+import com.blocksberg.java2word2vec.compilers.java8.Java8CompilerBundle;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -17,35 +11,31 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @author jh
  */
 public class Compiler {
 
-    private final File outputFile;
-    private FileWriter fileWriter;
-    private ParseTreeWalker parseTreeWalker;
-
     public static void main(String[] args) throws IOException {
         final CommandLine commandLine = parseCommandLine(args);
-        final Compiler compiler = new Compiler(commandLine.getOptionValue("o"));
+        final com.blocksberg.java2word2vec.compilers.Compiler
+                compiler = new com.blocksberg.java2word2vec.compilers.Compiler(commandLine.getOptionValue("o"));
         final List<String> sourceDirs = Arrays.asList(commandLine.getOptionValues("i"));
 
-        ParserFactory parserFactory = createParserFactory(commandLine.getOptionValue("m"));
-        System.out.println("compile " + sourceDirs + " with " + parserFactory.getClass().getSimpleName());
+        CompilerBundle compilerBundle = createParserFactory(commandLine.getOptionValue("m"));
+        System.out.println("compile " + sourceDirs + " with " + compilerBundle.getClass().getSimpleName());
+        compile(compiler, sourceDirs, compilerBundle);
+    }
+
+    private static void compile(com.blocksberg.java2word2vec.compilers.Compiler compiler, List<String> sourceDirs,
+                                CompilerBundle compilerBundle) throws IOException {
         sourceDirs.forEach(dir -> {
             try {
-                compiler.walk(dir, parserFactory);
+                compiler.walk(dir, compilerBundle);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -53,11 +43,11 @@ public class Compiler {
         compiler.close();
     }
 
-    private static ParserFactory createParserFactory(String mode) {
+    private static CompilerBundle createParserFactory(String mode) {
         if (mode == null || mode.equals("java7")) {
-            return new Java7ParserFactory();
+            return new Java7CompilerBundle();
         } else if (mode.equals("java8")) {
-            return new Java8ParserFactory();
+            return new Java8CompilerBundle();
         } else {
             throw new IllegalArgumentException("there is no mode matching '" + mode + "'");
         }
@@ -94,44 +84,7 @@ public class Compiler {
         new HelpFormatter().printHelp("java -jar java2words-compile.jar", options);
     }
 
-    public Compiler(String outfile) throws IOException {
-        outputFile = new File(outfile);
-        if (outputFile.exists()) {
-            outputFile.delete();
-        }
-        outputFile.createNewFile();
-        fileWriter = new FileWriter(outputFile);
-        parseTreeWalker = ParseTreeWalker.DEFAULT;
-    }
 
-
-    private void walk(String dir, ParserFactory parserFactory) throws IOException {
-        final Stream<Path> pathStream = Files
-                .walk(new File(dir).toPath())
-                .filter(p -> p.toString().endsWith(".java"));
-        pathStream.forEach(p -> {
-            try {
-                compile(p, parserFactory);
-            } catch (IOException e) {
-
-            }
-        });
-    }
-
-    private void close() throws IOException {
-        fileWriter.close();
-    }
-
-    private void compile(Path fileToCompile, ParserFactory parserFactory) throws IOException {
-        final ParseTreeListener compiler = parserFactory.createTypesListener();
-        final ParseTree compilationUnit = parse(fileToCompile, parserFactory);
-
-
-        parseTreeWalker.walk(compiler, compilationUnit);
-
-        fileWriter.append(compiler.toString());
-        fileWriter.flush();
-    }
 
     private String getOutPath(String path, String outputDir) {
         final File file = new File(path);
@@ -140,34 +93,4 @@ public class Compiler {
         return new File(outputDir, file.getName()).getAbsolutePath();
     }
 
-    private ParseTree parse(Path path, ParserFactory parserFactory) throws
-            FileNotFoundException {
-        final File file = path.toFile();
-        try (final FileInputStream fileInputStream = new FileInputStream(file);
-        ) {
-            final UnbufferedCharStream input = new UnbufferedCharStream(fileInputStream);
-            final Lexer javaLexer = parserFactory.createLexer(input);
-            javaLexer.setTokenFactory(new CommonTokenFactory(true));
-            final CommonTokenStream commonTokenStream = new CommonTokenStream(javaLexer);
-            final Parser parser = parserFactory.createParser(commonTokenStream);
-            //parser.addParseListener(compiler);
-
-            parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
-            try {
-                return parserFactory.rootElement(parser); // STAGE 1
-            }
-            catch (Exception ex) {
-                commonTokenStream.reset(); // rewind input stream
-                parser.reset();
-                parser.getInterpreter().setPredictionMode(PredictionMode.LL);
-                return parserFactory.rootElement(parser);  // STAGE 2
-                // if we parse ok, it's LL not SLL
-            }
-            //javaParser.getInterpreter().setPredictionMode(PredictionMode.SLL);
-            //javaParser.setErrorHandler(new BailErrorStrategy());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }

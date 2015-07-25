@@ -1,10 +1,12 @@
-package com.blocksberg.java2word2vec;
+package com.blocksberg.java2word2vec.compilers;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * List of java.lang classes, which need not be imported.
+ *
  * @author jh
  */
 public class JavaLangClasses {
@@ -119,5 +121,5 @@ public class JavaLangClasses {
 
     }
 
-    public static final Map<String,String> JAVA_LANG_TYPES = Collections.unmodifiableMap(javaLangTypes);
+    public static final Map<String, String> JAVA_LANG_TYPES = Collections.unmodifiableMap(javaLangTypes);
 }
