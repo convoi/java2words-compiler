@@ -5,19 +5,17 @@ import com.blocksberg.java2word2vec.grammar.JavaBaseListener;
 import com.blocksberg.java2word2vec.grammar.JavaParser;
 import com.blocksberg.java2word2vec.model.Type;
 
-import java.util.Set;
-
 /**
  * Collects all full qualified types in the class path.
  *
  * @author jh
  */
 public class JavaTypeScanner extends JavaBaseListener implements TypeCompiler {
-    private final Set<Type> knownTypes;
+    private final KnownTypesLibrary knownTypesLibrary;
     private String packageName;
 
-    public JavaTypeScanner(Set<Type> knownTypes) {
-        this.knownTypes = knownTypes;
+    public JavaTypeScanner(KnownTypesLibrary knownTypesLibrary) {
+        this.knownTypesLibrary = knownTypesLibrary;
     }
 
     @Override
@@ -27,11 +25,18 @@ public class JavaTypeScanner extends JavaBaseListener implements TypeCompiler {
 
     @Override
     public void enterClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
-        knownTypes.add(new Type(packageName + "." + ctx.Identifier().getText()));
+        final String shortName = ctx.Identifier().getText();
+        addClassOrInterface(shortName);
     }
 
-    public Set<Type> getKnownTypes() {
-        return knownTypes;
+    private void addClassOrInterface(String shortName) {
+        knownTypesLibrary.addType(new Type(packageName + "." + shortName));
+    }
+
+    @Override
+    public void enterInterfaceDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
+        String shortName = ctx.Identifier().getText();
+        addClassOrInterface(shortName);
     }
 
     @Override

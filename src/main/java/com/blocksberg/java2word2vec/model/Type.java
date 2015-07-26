@@ -18,6 +18,10 @@ public class Type {
         this.name = name;
     }
 
+    public Type(String packageName, String shortName) {
+        this.name = packageName + "." + shortName;
+    }
+
     public Multiset<Type> getDependsOn() {
         if (dependsOn == null) {
             dependsOn = HashMultiset.create();
@@ -27,6 +31,10 @@ public class Type {
 
     public String shortName() {
         return name.substring(name.lastIndexOf('.') + 1);
+    }
+
+    public boolean isStarType() {
+        return name.endsWith(".*");
     }
 
     @Override
@@ -48,6 +56,10 @@ public class Type {
 
     @Override
     public String toString() {
+        return name;
+    }
+
+    public String fullQualifiedName() {
         return name;
     }
 }

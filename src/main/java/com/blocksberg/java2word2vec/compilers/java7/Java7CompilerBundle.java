@@ -4,30 +4,23 @@ import com.blocksberg.java2word2vec.compilers.CompilerBundle;
 import com.blocksberg.java2word2vec.compilers.TypeCompiler;
 import com.blocksberg.java2word2vec.grammar.JavaLexer;
 import com.blocksberg.java2word2vec.grammar.JavaParser;
-import com.blocksberg.java2word2vec.model.Type;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author jh
  */
 public class Java7CompilerBundle implements CompilerBundle<JavaParser> {
 
-    private final Set<Type> knownTypes;
     private JavaTypeScanner typeLibraryCompiler;
+    private final KnownTypesLibrary knownTypesLibrary;
 
     public Java7CompilerBundle() {
-        this.knownTypes = new HashSet<>();
+        this.knownTypesLibrary = new KnownTypesLibrary();
     }
 
-    public Java7CompilerBundle(Set<Type> knownTypes) {
-        this.knownTypes = knownTypes;
-    }
 
     @Override
     public int numberOfPasses() {
@@ -39,13 +32,13 @@ public class Java7CompilerBundle implements CompilerBundle<JavaParser> {
         if (pass == 0) {
             return getTypeLibraryCompiler();
         } else {
-            return new Java7Type2WordVecCompiler();
+            return new Java7Type2WordVecCompiler(knownTypesLibrary);
         }
     }
 
     private TypeCompiler getTypeLibraryCompiler() {
         if (typeLibraryCompiler == null) {
-            typeLibraryCompiler = new JavaTypeScanner(knownTypes);
+            typeLibraryCompiler = new JavaTypeScanner(knownTypesLibrary);
         }
         return typeLibraryCompiler;
     }

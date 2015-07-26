@@ -16,7 +16,7 @@ public class KnownTypesLibraryTest {
     final KnownTypesLibrary knownTypesLibrary = new KnownTypesLibrary();
 
     @Test
-    public void aTypeKnownShouldBeFound() throws Exception {
+    public void aTypeKnownShouldBeFound() {
         knownTypesLibrary.addType(new Type("com.blocksberg.foo.Bar"));
         final Optional<Type> bar =
                 knownTypesLibrary.findTypeInPackages(Collections.singleton("com.blocksberg.foo"), "Bar");
@@ -24,10 +24,16 @@ public class KnownTypesLibraryTest {
     }
 
     @Test
-    public void aTypeNotKnownShouldNotBeFound() throws Exception {
+    public void aTypeNotKnownShouldNotBeFound() {
         knownTypesLibrary.addType(new Type("com.blocksberg.foo.Bar"));
         final Optional<Type> bar =
                 knownTypesLibrary.findTypeInPackages(Collections.singleton("com.blocksberg.foo"), "Baz");
         assertFalse(bar.isPresent());
+    }
+
+    @Test
+    public void aTypeShouldBeFindableByItsShortNameOnly() {
+        knownTypesLibrary.addType(new Type("com.blocksberg.foo.Bar"));
+        assertTrue(knownTypesLibrary.findFirst("Bar").isPresent());
     }
 }

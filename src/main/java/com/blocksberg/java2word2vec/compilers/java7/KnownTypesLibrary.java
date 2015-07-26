@@ -6,7 +6,7 @@ import com.google.common.collect.Multimap;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Contains all known types and can look them up by package name.
@@ -14,7 +14,6 @@ import java.util.Set;
  * @author jh
  */
 public class KnownTypesLibrary {
-    private Set<Type> knownTypes;
 
     private Multimap<String, Type> packages;
 
@@ -26,10 +25,35 @@ public class KnownTypesLibrary {
         packages.put(type.packageName(), type);
     }
 
-    Optional<Type> findTypeInPackages(Collection<String> searchPackages, String shortName) {
+    /**
+     * finds a type by its shortname looking in a given list of packages.
+     *
+     * @param searchPackages
+     * @param shortName
+     * @return
+     */
+    public Optional<Type> findTypeInPackages(Collection<String> searchPackages, String shortName) {
         return packages.asMap().entrySet().stream()
                 .filter(e -> searchPackages.contains(e.getKey()))
                 .flatMap(e -> e.getValue().stream().filter(t -> t.shortName().equals(shortName))).findFirst();
 
+    }
+
+    /**
+     * returns true if a shortname can be looked up in this library.
+     *
+     * @param shortName
+     * @return
+     */
+    public boolean knows(String shortName) {
+        return typesMatchingShortNameStream(shortName).findAny().isPresent();
+    }
+
+    private Stream<Type> typesMatchingShortNameStream(String shortName) {
+        return packages.values().stream().filter(t -> t.shortName().equals(shortName));
+    }
+
+    public Optional<Type> findFirst(String shortName) {
+        return typesMatchingShortNameStream(shortName).findFirst();
     }
 }

@@ -12,8 +12,10 @@ import org.apache.commons.cli.ParseException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author jh
@@ -24,14 +26,15 @@ public class Compiler {
         final CommandLine commandLine = parseCommandLine(args);
         final com.blocksberg.java2word2vec.compilers.Compiler
                 compiler = new com.blocksberg.java2word2vec.compilers.Compiler(commandLine.getOptionValue("o"));
-        final List<String> sourceDirs = Arrays.asList(commandLine.getOptionValues("i"));
+        final List<Path> sourceDirs = Arrays.asList(commandLine.getOptionValues("i")).stream().map(d -> new File(d)
+                .toPath()).collect(Collectors.toList());
 
         CompilerBundle compilerBundle = createParserFactory(commandLine.getOptionValue("m"));
         System.out.println("compile " + sourceDirs + " with " + compilerBundle.getClass().getSimpleName());
         compile(compiler, sourceDirs, compilerBundle);
     }
 
-    private static void compile(com.blocksberg.java2word2vec.compilers.Compiler compiler, List<String> sourceDirs,
+    private static void compile(com.blocksberg.java2word2vec.compilers.Compiler compiler, List<Path> sourceDirs,
                                 CompilerBundle compilerBundle) throws IOException {
         sourceDirs.forEach(dir -> {
             try {

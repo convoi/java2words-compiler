@@ -7,7 +7,6 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.UnbufferedCharStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.File;
@@ -44,12 +43,12 @@ public class Compiler {
      * @param compilerBundle
      * @throws IOException
      */
-    public void walk(String dir, CompilerBundle compilerBundle) throws IOException {
+    public void walk(Path dir, CompilerBundle compilerBundle) throws IOException {
         for (int pass = 0; pass < compilerBundle.numberOfPasses(); pass++) {
             System.out.println("running compilation pass " + pass);
             final int currentPass = pass;
             final Stream<Path> pathStream = Files
-                    .walk(new File(dir).toPath())
+                    .walk(dir)
                     .filter(p -> p.toString().endsWith(".java"));
             pathStream.forEach(p -> {
                 try {
@@ -73,12 +72,13 @@ public class Compiler {
     private void compile(final Path fileToCompile, final CompilerBundle compilerBundle, final int pass) throws
             IOException {
         final ParseTree compilationUnit = parse(fileToCompile, compilerBundle);
-        final ParseTreeListener compiler = compilerBundle.getCompilerInstance(pass);
+        final TypeCompiler compiler = compilerBundle.getCompilerInstance(pass);
 
         parseTreeWalker.walk(compiler, compilationUnit);
-
-        fileWriter.append(compiler.toString());
-        fileWriter.flush();
+        if (compiler.producesOutput()) {
+            fileWriter.append(compiler.getOutput());
+            fileWriter.flush();
+        }
     }
 
     ParseTree parse(Path path, CompilerBundle compilerBundle) throws
