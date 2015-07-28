@@ -29,6 +29,7 @@ public class TreeNodeJsonWriter {
 
   public void transformRootTreeToJson(final JsonWriter jsonWriter, final RootTreeNode tree) throws WriterException {
     this.transformTreeToJson(jsonWriter, tree);
+    jsonWriter.close();
   }
 
   private void transformTreeToJson(final JsonWriter jsonWriter, final TreeNode node) throws WriterException {
