@@ -57,4 +57,9 @@ public class Java7CompilerBundle implements CompilerBundle<JavaParser> {
     public ParseTree rootElement(JavaParser parser) {
         return parser.compilationUnit();
     }
+
+    @Override
+    public KnownTypesLibrary getKnownTypesLibrary() {
+        return knownTypesLibrary;
+    }
 }
