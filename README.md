@@ -3,3 +3,8 @@ Compiles java code to files that can be used for analyzing with [word2vec](https
 
 Usage:
     java -jar java2words-compiler.jar --out out/camel.semantics --in ~/apache-camel --mode java7semantics
+
+
+
+
+Distance funktion declaration: DefaultOpFactory
