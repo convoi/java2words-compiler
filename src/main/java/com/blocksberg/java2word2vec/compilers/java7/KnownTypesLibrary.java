@@ -56,4 +56,13 @@ public class KnownTypesLibrary {
     public Optional<Type> findFirst(String shortName) {
         return typesMatchingShortNameStream(shortName).findFirst();
     }
+
+    public Type getType(String id) {
+        final Type typeToLookup = new Type(id);
+        return packages.get(typeToLookup.packageName()).stream().filter(t -> t.equals(typeToLookup)).findFirst().get();
+    }
+
+    public Collection<Type> allTypes() {
+        return packages.values();
+    }
 }

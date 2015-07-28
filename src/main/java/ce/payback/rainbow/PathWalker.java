@@ -14,13 +14,19 @@ import java.util.regex.Pattern;
 public class PathWalker {
 
   private final RootTreeNode root;
-  private final Pattern pathSeparator = Pattern.compile("/");
+  private final Pattern pathSeparator;
   // TODO: different generated id sequence in DependencyExpander and
   // PathWalker.
   private int generatedIdSequence = Integer.MAX_VALUE - 100000;
 
   public PathWalker(final int id) {
+    this.pathSeparator = Pattern.compile("/");
     this.root = new RootTreeNode(id);
+  }
+
+  public PathWalker(final int id, final String pathSeparator) {
+    this.root = new RootTreeNode(id);
+    this.pathSeparator = Pattern.compile(pathSeparator);
   }
 
   public RootTreeNode getTree() {

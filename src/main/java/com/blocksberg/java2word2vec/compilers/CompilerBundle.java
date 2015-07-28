@@ -1,5 +1,6 @@
 package com.blocksberg.java2word2vec.compilers;
 
+import com.blocksberg.java2word2vec.compilers.java7.KnownTypesLibrary;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
@@ -22,4 +23,6 @@ public interface CompilerBundle<T extends Parser> {
     T createParser(TokenStream tokenStream);
 
     ParseTree rootElement(T parser);
+
+    KnownTypesLibrary getKnownTypesLibrary();
 }
