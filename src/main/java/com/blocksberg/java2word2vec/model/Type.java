@@ -15,6 +15,7 @@ public class Type {
     private String name;
     private List<Method> methods;
     private List<Field> fields;
+    private Integer clusterId;
 
     public Type(String name) {
         this.name = name;
@@ -80,4 +81,11 @@ public class Type {
         methods.add(method);
     }
 
+    public Integer getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(int clusterId) {
+        this.clusterId = clusterId;
+    }
 }

@@ -1,5 +1,6 @@
 package com.blocksberg.java2word2vec.compilers;
 
+import com.blocksberg.java2word2vec.compilers.java7.KnownTypesLibrary;
 import org.antlr.v4.runtime.CommonTokenFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -25,6 +26,7 @@ public class Compiler {
     private final File outputFile;
     private final FileWriter fileWriter;
     private final ParseTreeWalker parseTreeWalker;
+    private KnownTypesLibrary knownTypesLibrary;
 
     public Compiler(String outfile) throws IOException {
         outputFile = new File(outfile);
@@ -58,6 +60,7 @@ public class Compiler {
                 }
             });
         }
+        this.knownTypesLibrary = compilerBundle.getKnownTypesLibrary();
     }
 
     /**
@@ -109,5 +112,9 @@ public class Compiler {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public KnownTypesLibrary getKnownTypesLibrary() {
+        return knownTypesLibrary;
     }
 }

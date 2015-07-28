@@ -1,9 +1,14 @@
 package com.blocksberg.java2word2vec;
 
 import ce.payback.rainbow.PathWalker;
+import ce.payback.rainbow.tree.RootTreeNode;
+import ce.payback.rainbow.writer.JsonWriter;
+import ce.payback.rainbow.writer.TreeNodeJsonWriter;
+import ce.payback.rainbow.writer.WriterException;
 import com.blocksberg.java2word2vec.compilers.CompilerBundle;
 import com.blocksberg.java2word2vec.compilers.java7.Java7CompilerBundle;
 import com.blocksberg.java2word2vec.compilers.java7.Java7SemanticsBundle;
+import com.blocksberg.java2word2vec.compilers.java7.KnownTypesLibrary;
 import com.blocksberg.java2word2vec.compilers.java8.Java8CompilerBundle;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -11,8 +16,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.math.stat.clustering.KMeansPlusPlusClusterer;
-import org.deeplearning4j.clustering.algorithm.strategy.ClusteringStrategy;
 import org.deeplearning4j.clustering.cluster.Cluster;
 import org.deeplearning4j.clustering.cluster.ClusterSet;
 import org.deeplearning4j.clustering.cluster.Point;
@@ -20,27 +23,24 @@ import org.deeplearning4j.clustering.kmeans.KMeansClustering;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.sentenceiterator.LineSentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
-import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.EndingPreProcessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.springframework.core.io.ClassPathResource;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -48,9 +48,10 @@ import java.util.stream.Collectors;
  */
 public class Compiler {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, WriterException {
         final CommandLine commandLine = parseCommandLine(args);
         final String fileName = commandLine.getOptionValue("o");
+        final String jsonFileName = commandLine.getOptionValue("j");
         final com.blocksberg.java2word2vec.compilers.Compiler
                 compiler = new com.blocksberg.java2word2vec.compilers.Compiler(fileName);
         final List<Path> sourceDirs = Arrays.asList(commandLine.getOptionValues("i")).stream().map(d -> new File(d)
@@ -58,21 +59,11 @@ public class Compiler {
 
         CompilerBundle compilerBundle = createParserFactory(commandLine.getOptionValue("m"));
         System.out.println("compile " + sourceDirs + " with " + compilerBundle.getClass().getSimpleName());
-        compile(compiler, sourceDirs, compilerBundle);
+        final KnownTypesLibrary types = compile(compiler, sourceDirs, compilerBundle);
 
+        createJsonOutput(jsonFileName, types);
         File tempFile = File.createTempFile("neuronalNetwork", "out");
 
-        /*try  {
-            Runtime rt = Runtime.getRuntime() ;
-            Process p = new ProcessBuilder("word2vec/word2vec.exe" ,"-train " + fileName + " -output out/" + tempFile.getName() +  " -cbow 1 -size 200 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes 500").start();
-            InputStream os = p.getInputStream();
-            while(os.available() != -1) {
-                System.out.print(os.read());
-            }
-        } catch (Exception exc) {
-    /*handle exception
-            System.out.println(exc.getMessage());
-        }*/
 
 
         Process process = new ProcessBuilder("D:\\git\\java2words-compiler\\word2vec\\word2vec.exe", "-train " + fileName + " -output out/" + tempFile.getName() +  " -cbow 1 -size 200 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes 500").start();
@@ -89,7 +80,8 @@ public class Compiler {
 
     }
 
-    private static void prepareNNAndFeedCompiledFile(String fileName) throws IOException {
+    private static void prepareNNAndFeedCompiledFile(String fileName, KnownTypesLibrary types, String jsonFileName)
+            throws IOException, WriterException {
         System.out.println("Load data...");
         File file = new File(fileName);
         SentenceIterator iter = new LineSentenceIterator(file);
@@ -127,8 +119,6 @@ public class Compiler {
                 .build();
 
         vec.fit();
-
-
         final List<Point> wordPoints = vec.vocab().words().stream().map(w -> {
             final INDArray wordVectorMatrix = vec.getWordVectorMatrix(w);
             return new Point(w, wordVectorMatrix);
@@ -151,13 +141,32 @@ public class Compiler {
                 c -> c.getPoints().forEach(p -> System.out.println(p.getId() + " " + clusterIdMap.get(c.getId()))));
 
 
+                c -> c.getPoints().forEach(p -> types.getType(p.getId()).setClusterId(clusterIdMap.get(c.getId())
+                )));
 
         System.out.println("sout endet");
 
     }
 
+    private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types)
+            throws IOException, WriterException {
+        final PathWalker pathWalker = new PathWalker(0, ".");
+        types.allTypes().forEach(t -> pathWalker.addPath(t.fullQualifiedName(), t.getClusterId().toString()));
 
-    private static void compile(com.blocksberg.java2word2vec.compilers.Compiler compiler, List<Path> sourceDirs,
+
+        final FileWriter fileWriter = new FileWriter(jsonFileName);
+        final JsonWriter jsonWriter = JsonWriter.of(fileWriter);
+
+        final TreeNodeJsonWriter treeNodeJsonWriter = new TreeNodeJsonWriter();
+
+        final RootTreeNode tree = pathWalker.getTree();
+
+        treeNodeJsonWriter.transformRootTreeToJson(jsonWriter, tree);
+    }
+
+
+    private static KnownTypesLibrary compile(com.blocksberg.java2word2vec.compilers.Compiler compiler,
+                                             List<Path> sourceDirs,
                                 CompilerBundle compilerBundle) throws IOException {
         sourceDirs.forEach(dir -> {
             try {
@@ -167,6 +176,7 @@ public class Compiler {
             }
         });
         compiler.close();
+        return compiler.getKnownTypesLibrary();
     }
 
     private static CompilerBundle createParserFactory(String mode) {
@@ -192,6 +202,7 @@ public class Compiler {
                 .build());
         options.addOption(Option.builder("m").longOpt("mode").hasArg(true).required(false).desc("mode: java7 / " +
                 "java8").build());
+        options.addOption(Option.builder("j").longOpt("json").hasArg(true).required(true).desc("json output").build());
 
         try {
 
