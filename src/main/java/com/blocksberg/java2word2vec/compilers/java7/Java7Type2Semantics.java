@@ -1,9 +1,12 @@
 package com.blocksberg.java2word2vec.compilers.java7;
 
 import com.blocksberg.java2word2vec.compilers.JavaLangClasses;
+import com.blocksberg.java2word2vec.compilers.PrimitiveTypes;
 import com.blocksberg.java2word2vec.compilers.TypeCompiler;
 import com.blocksberg.java2word2vec.grammar.JavaBaseListener;
 import com.blocksberg.java2word2vec.grammar.JavaParser;
+import com.blocksberg.java2word2vec.model.Field;
+import com.blocksberg.java2word2vec.model.Method;
 import com.blocksberg.java2word2vec.model.Type;
 
 import java.util.ArrayDeque;
@@ -12,14 +15,14 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Compiles Java code to a stream of words (i.e. the Types used).
  *
  * @author jh
  */
-public class Java7Type2WordVecCompiler extends JavaBaseListener implements TypeCompiler {
-    private final StringBuilder stringBuilder;
+public class Java7Type2Semantics extends JavaBaseListener implements TypeCompiler {
     private final KnownTypesLibrary knownTypesLibrary;
     private String packageName;
     private Deque<Type> typeStack;
@@ -28,9 +31,8 @@ public class Java7Type2WordVecCompiler extends JavaBaseListener implements TypeC
 
     private boolean addClassToAllMethods;
 
-    public Java7Type2WordVecCompiler(KnownTypesLibrary knownTypesLibrary) {
+    public Java7Type2Semantics(KnownTypesLibrary knownTypesLibrary) {
         this.knownTypesLibrary = knownTypesLibrary;
-        stringBuilder = new StringBuilder();
         imports = new KnownTypesLibrary();
         starImports = new ArrayList<>();
         typeStack = new ArrayDeque<>();
@@ -49,28 +51,67 @@ public class Java7Type2WordVecCompiler extends JavaBaseListener implements TypeC
 
     @Override
     public void enterFieldDeclaration(JavaParser.FieldDeclarationContext ctx) {
+        final Type currentType = typeStack.peek();
+        Type fieldType = makeType(ctx.type());
+        /*final JavaParser.ClassBodyDeclarationContext parent =
+                (JavaParser.ClassBodyDeclarationContext) ctx.getParent().getParent();*/
+        //TODO modifier
+        currentType.addField(new Field(null, fieldType));
+    }
 
-        appendTypeLike(ctx.type());
+    private Type makeType(JavaParser.TypeContext ctx) {
+        if (ctx.classOrInterfaceType() != null) {
+            final String shortName = ctx.classOrInterfaceType().Identifier(0).getText();
+            return resolveType(shortName);
+            /*final List<JavaParser.TypeArgumentsContext> typeArgumentsContexts =
+                    ctx.classOrInterfaceType().typeArguments();
+            if (typeArgumentsContexts != null) {
+                typeArgumentsContexts.forEach(t -> {
+
+                    if (t != null) {
+                        t.typeArgument().forEach(x -> {
+                            if (x.type() != null) {
+                                appendTypeLike(x.type());
+                            }
+                        });
+                    }
+                });
+            }*/
+        } else if (ctx.primitiveType() != null) {
+            return resolveType(ctx.primitiveType().getText());
+        } else {
+            return null;
+        }
     }
 
     @Override
     public void enterMethodDeclaration(JavaParser.MethodDeclarationContext ctx) {
-        if (ctx.type() != null) {
-            appendCurrentType();
-            appendTypeLike(ctx.type());
-            if (ctx.formalParameters() != null && ctx.formalParameters().formalParameterList() != null) {
-                final JavaParser.FormalParameterListContext formalParameterListContext =
-                        ctx.formalParameters().formalParameterList();
+        final Type currentType = typeStack.peek();
+        Method method = createMethod(ctx);
+        currentType.addMethod(method);
+    }
 
-                formalParameterListContext.formalParameter().stream().forEach(p -> appendTypeLike(p
-                        .type()));
-            }
+    private Method createMethod(JavaParser.MethodDeclarationContext ctx) {
+        final List<Type> parameters;
+        if (ctx.formalParameters() != null && ctx.formalParameters().formalParameterList() != null) {
+            final JavaParser.FormalParameterListContext formalParameterListContext =
+                    ctx.formalParameters().formalParameterList();
+
+            parameters =
+                    formalParameterListContext.formalParameter().stream().map(p -> makeType(p.type())).collect(
+                            Collectors.toList());
+        } else {
+            parameters = Collections.emptyList();
         }
+        final Type result;
+        if (ctx.type() != null) {
+            result = makeType(ctx.type());
+        } else {
+            result = null;
+        }
+        return new Method(ctx.Identifier().toString(), result, parameters);
     }
 
-    private void appendCurrentType() {
-        appendType(typeStack.peek());
-    }
 
     @Override
     public void enterPackageDeclaration(JavaParser.PackageDeclarationContext ctx) {
@@ -95,7 +136,6 @@ public class Java7Type2WordVecCompiler extends JavaBaseListener implements TypeC
     private void handleClassOrInterfaceDeclaration(String shortName) {
         final Type type = resolveType(shortName);
         typeStack.add(type);
-        appendType(type);
     }
 
     /*
@@ -111,45 +151,12 @@ public class Java7Type2WordVecCompiler extends JavaBaseListener implements TypeC
         appendPrimitiveType(ctx.getText());
     }*/
 
-    private void appendTypeLike(JavaParser.TypeContext ctx) {
-        if (ctx.classOrInterfaceType() != null) {
-            final String shortName = ctx.classOrInterfaceType().Identifier(0).getText();
-            appendType(shortName);
-            final List<JavaParser.TypeArgumentsContext> typeArgumentsContexts =
-                    ctx.classOrInterfaceType().typeArguments();
-            if (typeArgumentsContexts != null) {
-                typeArgumentsContexts.forEach(t -> {
-
-                    if (t != null) {
-                        t.typeArgument().forEach(x -> {
-                            if (x.type() != null) {
-                                appendTypeLike(x.type());
-                            }
-                        });
-                    }
-                });
-            }
-        } else if (ctx.primitiveType() != null) {
-            appendPrimitiveType(ctx.primitiveType().getText());
-        }
-    }
-
-    private void appendPrimitiveType(String primitiveType) {
-        stringBuilder.append(primitiveType).append(" ");
-    }
-
-    private void appendType(String shortName) {
-        final Type type = resolveType(shortName);
-        appendType(type);
-    }
-
-    private void appendType(Type type) {
-        stringBuilder.append(type.fullQualifiedName()).append(" ");
-    }
 
     private Type resolveType(String shortName) {
         if (imports.knows(shortName)) {
             return new Type(imports.findFirst(shortName).get().fullQualifiedName());
+        } else if (PrimitiveTypes.PRIMITIVE_TYPES.containsKey(shortName)) {
+            return PrimitiveTypes.PRIMITIVE_TYPES.get(shortName);
         } else if (JavaLangClasses.JAVA_LANG_TYPES.containsKey(shortName)) {
             return new Type(JavaLangClasses.JAVA_LANG_TYPES.get(shortName));
         } else {
@@ -171,11 +178,11 @@ public class Java7Type2WordVecCompiler extends JavaBaseListener implements TypeC
 
     @Override
     public boolean producesOutput() {
-        return true;
+        return false;
     }
 
     @Override
     public String getOutput() {
-        return stringBuilder.toString();
+        return null;
     }
 }

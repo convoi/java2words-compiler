@@ -29,14 +29,20 @@ public class JavaTypeScanner extends JavaBaseListener implements TypeCompiler {
         addClassOrInterface(shortName);
     }
 
-    private void addClassOrInterface(String shortName) {
-        knownTypesLibrary.addType(new Type(packageName + "." + shortName));
-    }
-
     @Override
     public void enterInterfaceDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
         String shortName = ctx.Identifier().getText();
         addClassOrInterface(shortName);
+    }
+
+    @Override
+    public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
+        String shortName = ctx.Identifier().getText();
+        addClassOrInterface(shortName);
+    }
+
+    private void addClassOrInterface(String shortName) {
+        knownTypesLibrary.addType(new Type(packageName + "." + shortName));
     }
 
     @Override

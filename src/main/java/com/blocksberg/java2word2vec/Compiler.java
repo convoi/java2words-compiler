@@ -2,6 +2,7 @@ package com.blocksberg.java2word2vec;
 
 import com.blocksberg.java2word2vec.compilers.CompilerBundle;
 import com.blocksberg.java2word2vec.compilers.java7.Java7CompilerBundle;
+import com.blocksberg.java2word2vec.compilers.java7.Java7SemanticsBundle;
 import com.blocksberg.java2word2vec.compilers.java8.Java8CompilerBundle;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -49,6 +50,8 @@ public class Compiler {
     private static CompilerBundle createParserFactory(String mode) {
         if (mode == null || mode.equals("java7")) {
             return new Java7CompilerBundle();
+        } else if (mode.equals("java7semantics")) {
+            return new Java7SemanticsBundle();
         } else if (mode.equals("java8")) {
             return new Java8CompilerBundle();
         } else {

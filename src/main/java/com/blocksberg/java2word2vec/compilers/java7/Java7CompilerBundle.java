@@ -15,7 +15,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class Java7CompilerBundle implements CompilerBundle<JavaParser> {
 
     private JavaTypeScanner typeLibraryCompiler;
-    private final KnownTypesLibrary knownTypesLibrary;
+    protected final KnownTypesLibrary knownTypesLibrary;
 
     public Java7CompilerBundle() {
         this.knownTypesLibrary = new KnownTypesLibrary();
@@ -36,7 +36,7 @@ public class Java7CompilerBundle implements CompilerBundle<JavaParser> {
         }
     }
 
-    private TypeCompiler getTypeLibraryCompiler() {
+    protected TypeCompiler getTypeLibraryCompiler() {
         if (typeLibraryCompiler == null) {
             typeLibraryCompiler = new JavaTypeScanner(knownTypesLibrary);
         }
