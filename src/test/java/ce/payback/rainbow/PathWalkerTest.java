@@ -1,7 +1,6 @@
 package ce.payback.rainbow;
 
 import ce.payback.rainbow.tree.RootTreeNode;
-import ce.payback.rainbow.tree.TreeNode;
 import ce.payback.rainbow.tree.ValueTreeNode;
 import org.junit.Test;
 
@@ -26,6 +25,6 @@ public class PathWalkerTest {
         assertNotNull(stefan);
         assertNotNull(result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().get("Steven.java"));
 
-        assertEquals(stefan.getAttribute(), "#ffffff");
+        assertEquals(stefan.getColor(), "#ffffff");
     }
 }

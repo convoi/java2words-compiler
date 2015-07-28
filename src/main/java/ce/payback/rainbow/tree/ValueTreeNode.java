@@ -21,16 +21,16 @@ package ce.payback.rainbow.tree;
 
 public class ValueTreeNode extends TreeNode {
 
-  private final String attribute;
+  private final String color;
 
   public ValueTreeNode(final Integer id, final TreeNode parent, final int depth, final TreeNodeType type,
-    final String name, final String attribute) {
+    final String name, final String color) {
     super(id, parent, depth, type, name);
 
-    this.attribute = attribute;
+    this.color = color;
   }
 
-  public String getAttribute() {
-    return attribute;
+  public String getColor() {
+    return color;
   }
 }
