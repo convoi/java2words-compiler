@@ -80,7 +80,7 @@ public class Compiler {
 
     }
 
-    private static void prepareNNAndFeedCompiledFile(String fileName, KnownTypesLibrary types, String jsonFileName)
+    /*private static void prepareNNAndFeedCompiledFile(String fileName, KnownTypesLibrary types, String jsonFileName)
             throws IOException, WriterException {
         System.out.println("Load data...");
         File file = new File(fileName);
@@ -146,7 +146,7 @@ public class Compiler {
 
         System.out.println("sout endet");
 
-    }
+    }*/
 
     private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types)
             throws IOException, WriterException {
