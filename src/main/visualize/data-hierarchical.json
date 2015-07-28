@@ -16,12 +16,14 @@
                     {
                       "name": "bootstrap.css",
                       "size": 4945,
-                      "language": "CSS"
+                      "language": "CSS",
+                      "color": "blue"
                     },
                     {
                       "name": "style.css",
                       "size": 254,
-                      "language": "CSS"
+                      "language": "CSS",
+                      "color": "blue"
                     },
                     {
                       "name": "jquery.tagsinput.css",
