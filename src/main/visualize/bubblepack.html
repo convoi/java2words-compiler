@@ -46,7 +46,7 @@
 
     var myFlower = new CodeFlower("#visualization", 600, 600);
 
-    d3.json('test.json', function(error, data) {
+    d3.json('camel.json', function(error, data) {
         var rainbow = new Rainbow(data);
         var maxColorOrdinal = rainbow.getMaxColorOrdinal;
         myFlower.update(data, maxColorOrdinal);

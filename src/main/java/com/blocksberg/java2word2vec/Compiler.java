@@ -16,18 +16,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.deeplearning4j.clustering.cluster.Cluster;
-import org.deeplearning4j.clustering.cluster.ClusterSet;
-import org.deeplearning4j.clustering.cluster.Point;
-import org.deeplearning4j.clustering.kmeans.KMeansClustering;
-import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.text.sentenceiterator.LineSentenceIterator;
-import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
-import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
-import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.EndingPreProcessor;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,13 +23,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author jh
@@ -52,31 +39,55 @@ public class Compiler {
         final CommandLine commandLine = parseCommandLine(args);
         final String fileName = commandLine.getOptionValue("o");
         final String jsonFileName = commandLine.getOptionValue("j");
+        final String classes = commandLine.getOptionValue("c");
         final com.blocksberg.java2word2vec.compilers.Compiler
                 compiler = new com.blocksberg.java2word2vec.compilers.Compiler(fileName);
         final List<Path> sourceDirs = Arrays.asList(commandLine.getOptionValues("i")).stream().map(d -> new File(d)
                 .toPath()).collect(Collectors.toList());
+        final String word2vecPath = commandLine.getOptionValue("w");
 
         CompilerBundle compilerBundle = createParserFactory(commandLine.getOptionValue("m"));
         System.out.println("compile " + sourceDirs + " with " + compilerBundle.getClass().getSimpleName());
         final KnownTypesLibrary types = compile(compiler, sourceDirs, compilerBundle);
 
+        System.out.printf("Output of running %s is:", Arrays.toString(args));
+        File tempFile = runWord2Vec(fileName, word2vecPath, classes);
+        updateTypeClasses(tempFile.toPath(), types);
         createJsonOutput(jsonFileName, types);
+
+
+    }
+
+    private static File runWord2Vec(String fileName, String word2vecPath, String classes) throws IOException {
         File tempFile = File.createTempFile("neuronalNetwork", "out");
 
 
-
-        Process process = new ProcessBuilder("D:\\git\\java2words-compiler\\word2vec\\word2vec.exe", "-train " + fileName + " -output out/" + tempFile.getName() +  " -cbow 1 -size 200 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes 500").start();
+        Process process = Runtime.getRuntime().exec(word2vecPath + " " +
+                "-train " + fileName + " -output " + tempFile.getAbsolutePath() +
+                " -cbow 1 -size 200 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes " +
+                "" + classes);
         InputStream is = process.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
         String line;
 
-        System.out.printf("Output of running %s is:", Arrays.toString(args));
+
 
         while ((line = br.readLine()) != null) {
             System.out.println(line);
         }
+        is.close();
+        return tempFile;
+    }
+
+    private static void updateTypeClasses(Path absolutePath, KnownTypesLibrary types) throws IOException {
+        Stream<String> lines = Files.lines(absolutePath);
+        lines.forEach(l -> {
+            final String[] splitted = l.split(" ");
+            if (splitted.length > 1 && splitted[0] != null && !splitted[0].isEmpty()) {
+                types.getType(splitted[0]).ifPresent(t -> t.setClusterId(Integer.valueOf(splitted[1])));
+            }
+        });
 
     }
 
@@ -167,7 +178,7 @@ public class Compiler {
 
     private static KnownTypesLibrary compile(com.blocksberg.java2word2vec.compilers.Compiler compiler,
                                              List<Path> sourceDirs,
-                                CompilerBundle compilerBundle) throws IOException {
+                                             CompilerBundle compilerBundle) throws IOException {
         sourceDirs.forEach(dir -> {
             try {
                 compiler.walk(dir, compilerBundle);
@@ -192,7 +203,7 @@ public class Compiler {
     }
 
 
-    private static CommandLine parseCommandLine(String[] args)  {
+    private static CommandLine parseCommandLine(String[] args) {
         Options options = new Options();
         options.addOption(Option.builder("o").longOpt("out").hasArg(true).required(true).desc("compile words file")
                 .build());
@@ -203,7 +214,10 @@ public class Compiler {
         options.addOption(Option.builder("m").longOpt("mode").hasArg(true).required(false).desc("mode: java7 / " +
                 "java8").build());
         options.addOption(Option.builder("j").longOpt("json").hasArg(true).required(true).desc("json output").build());
-
+        options.addOption(Option.builder("w").longOpt("word2vec").hasArg(true).required(true).desc("path to " +
+                "word2vec").build());
+        options.addOption(Option.builder("c").longOpt("classes").hasArg(true).required(true).desc("number of " +
+                "classes").build());
         try {
 
             final CommandLine commandLine = new DefaultParser().parse(options, args);
@@ -222,7 +236,6 @@ public class Compiler {
     private static void printUsage(Options options) {
         new HelpFormatter().printHelp("java -jar java2words-compile.jar", options);
     }
-
 
 
     private String getOutPath(String path, String outputDir) {

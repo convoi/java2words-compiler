@@ -26,7 +26,7 @@ public class PathWalker {
 
   public PathWalker(final int id, final String pathSeparator) {
     this.root = new RootTreeNode(id);
-    this.pathSeparator = Pattern.compile(pathSeparator);
+    this.pathSeparator = Pattern.compile("\\" + pathSeparator);
   }
 
   public RootTreeNode getTree() {

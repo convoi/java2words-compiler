@@ -56,7 +56,11 @@ public class Type {
     }
 
     public String packageName() {
-        return name.substring(0, name.lastIndexOf('.'));
+        if (name.contains(".")) {
+            return name.substring(0, name.lastIndexOf('.'));
+        } else {
+            return "";
+        }
     }
 
     @Override
