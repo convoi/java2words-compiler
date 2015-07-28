@@ -1,31 +1,42 @@
 package ce.payback.rainbow;
 
 import ce.payback.rainbow.tree.RootTreeNode;
-import ce.payback.rainbow.tree.TreeNode;
 import ce.payback.rainbow.tree.ValueTreeNode;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
- * Created by stefan on 28.07.15.
+ * Unit test of the PathWalker class.
  */
 public class PathWalkerTest {
 
+    final private static String WHITE = "#ffffff";
+    final private static String BLACK = "#000000";
+
     @Test
     public void testGetTree() throws Exception {
+
         final PathWalker underTest = new PathWalker(0);
 
-        underTest.addPath("src/main/java/Stefan.java", "#ffffff");
-        underTest.addPath("src/main/test/Steven.java", "#000000");
+        underTest.addPath("src/main/java/Stefan.java", WHITE);
+        underTest.addPath("src/main/test/Steven.java", BLACK);
 
         RootTreeNode result = underTest.getTree();
 
         assertEquals(1, result.getChildren().size());
+        assertEquals(1, result.getChildren().get("src").getChildren().size());
+        assertEquals(2, result.getChildren().get("src").getChildren().get("main").getChildren().size());
+        assertEquals(1, result.getChildren().get("src").getChildren().get("main").getChildren().get("java").getChildren().size());
+        assertEquals(1, result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().size());
+
         final ValueTreeNode stefan = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("java").getChildren().get("Stefan.java");
         assertNotNull(stefan);
-        assertNotNull(result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().get("Steven.java"));
+        assertEquals(stefan.getAttribute(), WHITE);
 
-        assertEquals(stefan.getAttribute(), "#ffffff");
+        final ValueTreeNode steven = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().get("Steven.java");
+        assertNotNull(steven);
+        assertEquals(steven.getAttribute(), BLACK);
     }
 }
