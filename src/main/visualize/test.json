@@ -2,30 +2,31 @@
   "id": 0,
   "name": "root",
   "isNode": true,
+  "color": 1,
   "children": [
     {
       "id": 2147383649,
       "name": "src",
       "isNode": true,
-      "color": "",
+      "color": 2,
       "children": [
         {
           "id": 2147383650,
           "name": "main",
           "isNode": true,
-          "color": "",
+          "color": 3,
           "children": [
             {
               "id": 2147383651,
               "name": "java",
               "isNode": true,
-              "color": "",
+              "color": 4,
               "children": [
                 {
                   "id": 2147383648,
                   "name": "Stefan.java",
                   "isNode": false,
-                  "color": "#0000ff",
+                  "color": 5,
                   "children": []
                 }
               ]
@@ -34,13 +35,13 @@
               "id": 2147383655,
               "name": "test",
               "isNode": true,
-              "color": "",
+              "color": 4,
               "children": [
                 {
                   "id": 2147383652,
                   "name": "Steven.java",
                   "isNode": false,
-                  "color": "#000000",
+                  "color": 5,
                   "children": []
                 }
               ]

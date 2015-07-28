@@ -47,7 +47,7 @@ public class TreeNodeJsonWriter {
   private void optionalTransformMetricValues(final JsonWriter jsonWriter, final TreeNode node) throws WriterException {
     if (node instanceof ValueTreeNode) {
       final ValueTreeNode valueNode = (ValueTreeNode) node;
-      jsonWriter.prop("color", valueNode.getColor());
+      jsonWriter.prop("color", valueNode.getColorReferenceNumber());
     }
   }
 

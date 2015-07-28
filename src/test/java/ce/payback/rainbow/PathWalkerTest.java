@@ -12,8 +12,8 @@ import static org.junit.Assert.assertNotNull;
  */
 public class PathWalkerTest {
 
-    final private static String WHITE = "#ffffff";
-    final private static String BLACK = "#000000";
+    final private static Integer WHITE = 0;
+    final private static Integer BLACK = 20;
 
     @Test
     public void testGetTree() throws Exception {
@@ -33,10 +33,10 @@ public class PathWalkerTest {
 
         final ValueTreeNode stefan = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("java").getChildren().get("Stefan.java");
         assertNotNull(stefan);
-        assertEquals(stefan.getColor(), WHITE);
+        assertEquals(stefan.getColorReferenceNumber(), WHITE);
 
         final ValueTreeNode steven = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().get("Steven.java");
         assertNotNull(steven);
-        assertEquals(steven.getColor(), BLACK);
+        assertEquals(steven.getColorReferenceNumber(), BLACK);
     }
 }

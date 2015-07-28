@@ -33,7 +33,7 @@ public class PathWalker {
     return this.root;
   }
 
-  public void addPath(final String path, final String color) {
+  public void addPath(final String path, final Integer colorReferenceNumber) {
     final int id = getNextSequence();
     final String[] names = this.pathSeparator.split(path);
 
@@ -44,7 +44,7 @@ public class PathWalker {
       isLastIndex = (i == (names.length - 1));
       if (isLastIndex) {
         currentNode =
-          this.getOrCreateChild(currentNode, id, names[i], TreeNodeType.TREE, color);
+          this.getOrCreateChild(currentNode, id, names[i], TreeNodeType.TREE, colorReferenceNumber);
       } else {
         currentNode = this.getOrCreateGeneratedChild(currentNode, names[i]);
       }
@@ -57,14 +57,14 @@ public class PathWalker {
   }
 
   private TreeNode getOrCreateChild(final TreeNode node, final Integer id, final String name, final TreeNodeType type,
-    final String color) {
+    final Integer colorReferenceNumber) {
     final Map<String, TreeNode> children = node.getChildren();
     if (children.containsKey(name)) {
       return children.get(name);
     }
 
     final TreeNode result =
-      new ValueTreeNode(id, node, node.getDepth() + 1, type, name, color);
+      new ValueTreeNode(id, node, node.getDepth() + 1, type, name, colorReferenceNumber);
 
     node.addChildrenNode(name, result);
 
@@ -72,7 +72,7 @@ public class PathWalker {
   }
 
   private TreeNode getOrCreateGeneratedChild(final TreeNode node, final String name) {
-    return this.getOrCreateChild(node, this.getNextSequence(), name, TreeNodeType.PATH_GENERATED, "");
+    return this.getOrCreateChild(node, this.getNextSequence(), name, TreeNodeType.PATH_GENERATED, 0);
   }
 
 }

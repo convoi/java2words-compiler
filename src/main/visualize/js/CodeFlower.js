@@ -21,7 +21,9 @@ var CodeFlower = function(selector, w, h) {
     .size([h, w]);
 };
 
-CodeFlower.prototype.update = function(json) {
+CodeFlower.prototype.update = function(json, maxColorOrdinal) {
+  this.ordinalColors = d3.scale.category20b();
+
   if (json) this.json = json;
 
   this.json.fixed = true;
@@ -74,9 +76,9 @@ CodeFlower.prototype.update = function(json) {
     .attr("r", function(d) { return d.children ? 3.5 : Math.pow(d.size, 2/5) || 1; })
     .style("fill", function color(d) {
         if (d.color) {
-          return d.color;
+          return me.ordinalColors(d.color);
         } else {
-          return "#ffffff";
+          return "#ff0000";
         }
     })
     .call(this.force.drag)
