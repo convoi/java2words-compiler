@@ -1,0 +1,53 @@
+{
+  "id": 0,
+  "name": "root",
+  "isNode": true,
+  "children": [
+    {
+      "id": 2147383649,
+      "name": "src",
+      "isNode": true,
+      "color": "",
+      "children": [
+        {
+          "id": 2147383650,
+          "name": "main",
+          "isNode": true,
+          "color": "",
+          "children": [
+            {
+              "id": 2147383651,
+              "name": "java",
+              "isNode": true,
+              "color": "",
+              "children": [
+                {
+                  "id": 2147383648,
+                  "name": "Stefan.java",
+                  "isNode": false,
+                  "color": "#0000ff",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": 2147383655,
+              "name": "test",
+              "isNode": true,
+              "color": "",
+              "children": [
+                {
+                  "id": 2147383652,
+                  "name": "Steven.java",
+                  "isNode": false,
+                  "color": "#000000",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

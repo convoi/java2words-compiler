@@ -33,10 +33,10 @@ public class PathWalkerTest {
 
         final ValueTreeNode stefan = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("java").getChildren().get("Stefan.java");
         assertNotNull(stefan);
-        assertEquals(stefan.getAttribute(), WHITE);
+        assertEquals(stefan.getColor(), WHITE);
 
         final ValueTreeNode steven = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().get("Steven.java");
         assertNotNull(steven);
-        assertEquals(steven.getAttribute(), BLACK);
+        assertEquals(steven.getColor(), BLACK);
     }
 }
