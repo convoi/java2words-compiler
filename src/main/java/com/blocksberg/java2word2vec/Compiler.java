@@ -29,9 +29,13 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,23 +62,29 @@ public class Compiler {
         final KnownTypesLibrary types = compile(compiler, sourceDirs, compilerBundle);
 
         createJsonOutput(jsonFileName, types);
+        File tempFile = File.createTempFile("neuronalNetwork", "out");
 
 
+
+        Process process = new ProcessBuilder("D:\\git\\java2words-compiler\\word2vec\\word2vec.exe", "-train " + fileName + " -output out/" + tempFile.getName() +  " -cbow 1 -size 200 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes 500").start();
+        InputStream is = process.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+
+        System.out.printf("Output of running %s is:", Arrays.toString(args));
+
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
 
     }
 
-    private static void prepareNNAndFeedCompiledFile(String fileName, KnownTypesLibrary types, String jsonFileName)
+    /*private static void prepareNNAndFeedCompiledFile(String fileName, KnownTypesLibrary types, String jsonFileName)
             throws IOException, WriterException {
         System.out.println("Load data...");
         File file = new File(fileName);
         SentenceIterator iter = new LineSentenceIterator(file);
-        /*iter.setPreProcessor(new SentencePreProcessor() {
-            @Override
-            public String preProcess(String sentence) {
-                return sentence.toLowerCase();
-            }
-        });*/
-
 
         System.out.println("Tokenize data....");
         final EndingPreProcessor preProcessor = new EndingPreProcessor();
@@ -82,11 +92,8 @@ public class Compiler {
         tokenizer.setTokenPreProcessor(new TokenPreProcess() {
             @Override
             public String preProcess(String token) {
-                //token = token.toLowerCase();
                 String base = preProcessor.preProcess(token);
                 base = base.replaceAll("\\d", "d");
-                if (base.endsWith("ly") || base.endsWith("ing"))
-                    System.out.println();
                 return base;
 
             }
@@ -110,6 +117,7 @@ public class Compiler {
                 .iterate(iter) //
                 .tokenizerFactory(tokenizer)
                 .build();
+
         vec.fit();
         final List<Point> wordPoints = vec.vocab().words().stream().map(w -> {
             final INDArray wordVectorMatrix = vec.getWordVectorMatrix(w);
@@ -117,9 +125,12 @@ public class Compiler {
         }).collect(Collectors.toList());
 
         System.out.println("clustering...");
-        KMeansClustering kMeansClustering = KMeansClustering.setup(10, 15, "cosine");
+        KMeansClustering kMeansClustering = KMeansClustering.setup(10, 5, "cosine"); // cosine
+
+        wordPoints.forEach(x -> System.out.println(x.getArray().length() + " " + x.getId()));
         final ClusterSet clusterSet = kMeansClustering.applyTo(wordPoints);
 
+        System.out.println("applyTo ended");
         List<String> clusterIds = clusterSet.getClusters().stream().map(Cluster::getId).collect(Collectors.toList());
         Map<String, Integer> clusterIdMap = new HashMap<>();
         for (int i = 0; i < clusterIds.size(); i++) {
@@ -127,12 +138,15 @@ public class Compiler {
         }
 
         clusterSet.getClusters().forEach(
+                c -> c.getPoints().forEach(p -> System.out.println(p.getId() + " " + clusterIdMap.get(c.getId()))));
+
+
                 c -> c.getPoints().forEach(p -> types.getType(p.getId()).setClusterId(clusterIdMap.get(c.getId())
                 )));
 
         System.out.println("sout endet");
 
-    }
+    }*/
 
     private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types)
             throws IOException, WriterException {
