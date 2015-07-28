@@ -14,14 +14,16 @@ public class PathWalkerTest {
 
     final private static Integer WHITE = 0;
     final private static Integer BLACK = 20;
+    final private static Integer ONE = 1;
+    final private static Integer FIVE = 5;
 
     @Test
     public void testGetTree() throws Exception {
 
         final PathWalker underTest = new PathWalker(0);
 
-        underTest.addPath("src/main/java/Stefan.java", WHITE);
-        underTest.addPath("src/main/test/Steven.java", BLACK);
+        underTest.addPath("src/main/java/Stefan.java", WHITE, FIVE);
+        underTest.addPath("src/main/test/Steven.java", BLACK, ONE);
 
         RootTreeNode result = underTest.getTree();
 
@@ -34,9 +36,11 @@ public class PathWalkerTest {
         final ValueTreeNode stefan = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("java").getChildren().get("Stefan.java");
         assertNotNull(stefan);
         assertEquals(stefan.getColorReferenceNumber(), WHITE);
+        assertEquals(stefan.getSize(), FIVE);
 
         final ValueTreeNode steven = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().get("Steven.java");
         assertNotNull(steven);
         assertEquals(steven.getColorReferenceNumber(), BLACK);
+        assertEquals(steven.getSize(), ONE);
     }
 }
