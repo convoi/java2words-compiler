@@ -48,6 +48,7 @@ public class TreeNodeJsonWriter {
     if (node instanceof ValueTreeNode) {
       final ValueTreeNode valueNode = (ValueTreeNode) node;
       jsonWriter.prop("color", valueNode.getColorReferenceNumber());
+      jsonWriter.prop("size", valueNode.getSize());
     }
   }
 

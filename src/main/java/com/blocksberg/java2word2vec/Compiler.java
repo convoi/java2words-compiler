@@ -151,7 +151,7 @@ public class Compiler {
     private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types)
             throws IOException, WriterException {
         final PathWalker pathWalker = new PathWalker(0, ".");
-        types.allTypes().forEach(t -> pathWalker.addPath(t.fullQualifiedName(), t.getClusterId()));
+        types.allTypes().forEach(t -> pathWalker.addPath(t.fullQualifiedName(), t.getClusterId(), 0));
 
 
         final FileWriter fileWriter = new FileWriter(jsonFileName);
