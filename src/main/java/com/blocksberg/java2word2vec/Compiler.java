@@ -1,5 +1,6 @@
 package com.blocksberg.java2word2vec;
 
+import ce.payback.rainbow.PathWalker;
 import com.blocksberg.java2word2vec.compilers.CompilerBundle;
 import com.blocksberg.java2word2vec.compilers.java7.Java7CompilerBundle;
 import com.blocksberg.java2word2vec.compilers.java7.Java7SemanticsBundle;
@@ -27,8 +28,12 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.springframework.core.io.ClassPathResource;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,9 +60,32 @@ public class Compiler {
         System.out.println("compile " + sourceDirs + " with " + compilerBundle.getClass().getSimpleName());
         compile(compiler, sourceDirs, compilerBundle);
 
-        prepareNNAndFeedCompiledFile(fileName);
+        File tempFile = File.createTempFile("neuronalNetwork", "out");
+
+        /*try  {
+            Runtime rt = Runtime.getRuntime() ;
+            Process p = new ProcessBuilder("word2vec/word2vec.exe" ,"-train " + fileName + " -output out/" + tempFile.getName() +  " -cbow 1 -size 200 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes 500").start();
+            InputStream os = p.getInputStream();
+            while(os.available() != -1) {
+                System.out.print(os.read());
+            }
+        } catch (Exception exc) {
+    /*handle exception
+            System.out.println(exc.getMessage());
+        }*/
 
 
+        Process process = new ProcessBuilder("D:\\git\\java2words-compiler\\word2vec\\word2vec.exe", "-train " + fileName + " -output out/" + tempFile.getName() +  " -cbow 1 -size 200 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes 500").start();
+        InputStream is = process.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+
+        System.out.printf("Output of running %s is:", Arrays.toString(args));
+
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
 
     }
 
@@ -65,13 +93,6 @@ public class Compiler {
         System.out.println("Load data...");
         File file = new File(fileName);
         SentenceIterator iter = new LineSentenceIterator(file);
-        /*iter.setPreProcessor(new SentencePreProcessor() {
-            @Override
-            public String preProcess(String sentence) {
-                return sentence.toLowerCase();
-            }
-        });*/
-
 
         System.out.println("Tokenize data....");
         final EndingPreProcessor preProcessor = new EndingPreProcessor();
@@ -79,11 +100,8 @@ public class Compiler {
         tokenizer.setTokenPreProcessor(new TokenPreProcess() {
             @Override
             public String preProcess(String token) {
-                //token = token.toLowerCase();
                 String base = preProcessor.preProcess(token);
                 base = base.replaceAll("\\d", "d");
-                if (base.endsWith("ly") || base.endsWith("ing"))
-                    System.out.println();
                 return base;
 
             }
@@ -107,6 +125,7 @@ public class Compiler {
                 .iterate(iter) //
                 .tokenizerFactory(tokenizer)
                 .build();
+
         vec.fit();
 
 
@@ -116,9 +135,12 @@ public class Compiler {
         }).collect(Collectors.toList());
 
         System.out.println("clustering...");
-        KMeansClustering kMeansClustering = KMeansClustering.setup(10, 15, "cosine");
+        KMeansClustering kMeansClustering = KMeansClustering.setup(10, 5, "cosine"); // cosine
+
+        wordPoints.forEach(x -> System.out.println(x.getArray().length() + " " + x.getId()));
         final ClusterSet clusterSet = kMeansClustering.applyTo(wordPoints);
 
+        System.out.println("applyTo ended");
         List<String> clusterIds = clusterSet.getClusters().stream().map(Cluster::getId).collect(Collectors.toList());
         Map<String, Integer> clusterIdMap = new HashMap<>();
         for (int i = 0; i < clusterIds.size(); i++) {
@@ -127,6 +149,8 @@ public class Compiler {
 
         clusterSet.getClusters().forEach(
                 c -> c.getPoints().forEach(p -> System.out.println(p.getId() + " " + clusterIdMap.get(c.getId()))));
+
+
 
         System.out.println("sout endet");
 
