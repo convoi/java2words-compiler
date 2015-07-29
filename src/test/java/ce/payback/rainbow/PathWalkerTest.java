@@ -15,8 +15,8 @@ import static org.junit.Assert.assertNotNull;
  */
 public class PathWalkerTest {
 
-    final private static Integer WHITE = 0;
-    final private static Integer BLACK = 20;
+    final private static int WHITE = 0;
+    final private static int BLACK = 20;
     final private static String  SIZE_KEY = "size";
     final private static Integer ONE = 1;
     final private static Integer FIVE = 5;
@@ -31,21 +31,21 @@ public class PathWalkerTest {
 
         RootTreeNode result = underTest.getTree();
 
-        assertEquals(1, result.getChildren().size());
-        assertEquals(1, result.getChildren().get("src").getChildren().size());
-        assertEquals(2, result.getChildren().get("src").getChildren().get("main").getChildren().size());
-        assertEquals(1, result.getChildren().get("src").getChildren().get("main").getChildren().get("java").getChildren().size());
-        assertEquals(1, result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().size());
+        assertEquals("testGetTree structure check 1", 1, result.getChildren().size());
+        assertEquals("testGetTree structure check 2", 1, result.getChildren().get("src").getChildren().size());
+        assertEquals("testGetTree structure check 3", 2, result.getChildren().get("src").getChildren().get("main").getChildren().size());
+        assertEquals("testGetTree structure check 4", 1, result.getChildren().get("src").getChildren().get("main").getChildren().get("java").getChildren().size());
+        assertEquals("testGetTree structure check 5", 1, result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().size());
 
         final ValueTreeNode stefan = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("java").getChildren().get("Stefan.java");
-        assertNotNull(stefan);
-        assertEquals(stefan.getColorReferenceNumber(), WHITE);
-        assertEquals(stefan.getStatistics().get(SIZE_KEY), FIVE);
+        assertNotNull("testGetTree node stefan check not null", stefan);
+        assertEquals("testGetTree node stefan check colorReferenceNumber", WHITE, stefan.getColorReferenceNumber()-1);
+        assertEquals("testGetTree node stefan check statistic size", FIVE,stefan.getStatistics().get(SIZE_KEY));
 
         final ValueTreeNode steven = (ValueTreeNode) result.getChildren().get("src").getChildren().get("main").getChildren().get("test").getChildren().get("Steven.java");
-        assertNotNull(steven);
-        assertEquals(steven.getColorReferenceNumber(), BLACK);
-        assertEquals(steven.getStatistics().get(SIZE_KEY), ONE);
+        assertNotNull("testGetTree node steven check not null", steven);
+        assertEquals("testGetTree node steven check colorReferenceNumber", BLACK, steven.getColorReferenceNumber()-1);
+        assertEquals("testGetTree node steven check statistic size", ONE, steven.getStatistics().get(SIZE_KEY));
     }
 
     private Map<String, Number> createStatistics(final String key, final Number value) {
