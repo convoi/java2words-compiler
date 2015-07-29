@@ -82,7 +82,7 @@ CodeFlower.prototype.update = function(json) {
         }
     })
     .call(this.force.drag)
-    //.on("click", this.click.bind(this))
+    .on("click", this.click.bind(this))
     .on("mouseover", this.mouseover.bind(this))
     .on("mouseout", this.mouseout.bind(this));
 
@@ -116,17 +116,17 @@ CodeFlower.prototype.flatten = function(root) {
   return nodes;
 };
 
-//CodeFlower.prototype.click = function(d) {
-//  // Toggle children on click.
-//  if (d.children) {
-//    d._children = d.children;
-//    d.children = null;
-//  } else {
-//    d.children = d._children;
-//    d._children = null;
-//  }
-//  this.update();
-//};
+CodeFlower.prototype.click = function(d) {
+  // Toggle children on click.
+  //if (d.children) {
+  //  d._children = d.children;
+  //  d.children = null;
+  //} else {
+  //  d.children = d._children;
+  //  d._children = null;
+  //}
+  //this.update();
+};
 
 CodeFlower.prototype.mouseover = function(d) {
   this.text.attr('transform', 'translate(' + d.x + ',' + (d.y - 5 - (d.children ? 3.5 : Math.sqrt(d.size) / 2)) + ')')

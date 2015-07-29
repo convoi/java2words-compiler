@@ -37,7 +37,7 @@ angular.module('rainbowApp', ['treeControl'])
             rainbow.visualize = !rainbow.visualize;
 
             if (rainbow.visualize) {
-                rainbow.myFlower = new CodeFlower("#visualization", 3000, 3000);
+                rainbow.myFlower = new CodeFlower("#visualization", 1000, 1000);
                 rainbow.myFlower.update(rainbow.selectedPackage);
             } else {
                 rainbow.myFlower = null;
@@ -47,13 +47,13 @@ angular.module('rainbowApp', ['treeControl'])
 
         rainbow.selectableProjects = [{
             id: 1,
-            label: 'camel.json'
+            label: 'examples/camel.json'
         }, {
             id: 2,
-            label: 'camel-full.json'
+            label: 'examples/camel-full.json'
         }, {
             id: 3,
-            label: 'data-hierarchical TODO'
+            label: 'examples/lmsapp.json'
         }];
 
         rainbow.selectedProjectId = 0;
