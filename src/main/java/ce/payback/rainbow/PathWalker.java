@@ -5,6 +5,7 @@ import ce.payback.rainbow.tree.TreeNode;
 import ce.payback.rainbow.tree.TreeNodeType;
 import ce.payback.rainbow.tree.ValueTreeNode;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -33,7 +34,7 @@ public class PathWalker {
     return this.root;
   }
 
-  public void addPath(final String path, final Integer colorReferenceNumber, final Integer size) {
+  public void addPath(final String path, final Integer colorReferenceNumber, final Map<String, Number> statistics) {
     final int id = getNextSequence();
     final String[] names = this.pathSeparator.split(path);
 
@@ -44,7 +45,7 @@ public class PathWalker {
       isLastIndex = (i == (names.length - 1));
       if (isLastIndex) {
         currentNode =
-          this.getOrCreateChild(currentNode, id, names[i], TreeNodeType.TREE, colorReferenceNumber, size);
+          this.getOrCreateChild(currentNode, id, names[i], TreeNodeType.TREE, colorReferenceNumber, statistics);
       } else {
         currentNode = this.getOrCreateGeneratedChild(currentNode, names[i]);
       }
@@ -57,14 +58,14 @@ public class PathWalker {
   }
 
   private TreeNode getOrCreateChild(final TreeNode node, final Integer id, final String name, final TreeNodeType type,
-    final Integer colorReferenceNumber, final Integer size) {
+    final Integer colorReferenceNumber, final Map<String, Number> statistics) {
     final Map<String, TreeNode> children = node.getChildren();
     if (children.containsKey(name)) {
       return children.get(name);
     }
 
     final TreeNode result =
-      new ValueTreeNode(id, node, node.getDepth() + 1, type, name, colorReferenceNumber, size);
+      new ValueTreeNode(id, node, node.getDepth() + 1, type, name, colorReferenceNumber, statistics);
 
     node.addChildrenNode(name, result);
 
@@ -72,7 +73,7 @@ public class PathWalker {
   }
 
   private TreeNode getOrCreateGeneratedChild(final TreeNode node, final String name) {
-    return this.getOrCreateChild(node, this.getNextSequence(), name, TreeNodeType.PATH_GENERATED, 0, 0);
+    return this.getOrCreateChild(node, this.getNextSequence(), name, TreeNodeType.PATH_GENERATED, 0, Collections.EMPTY_MAP);
   }
 
 }
