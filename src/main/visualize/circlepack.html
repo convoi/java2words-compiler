@@ -2,20 +2,20 @@
 <meta charset="utf-8">
 <style>
 
-    circle {
-        fill: rgb(31, 119, 180);
-        fill-opacity: .25;
-        stroke: rgb(31, 119, 180);
-        stroke-width: 1px;
+    circle.cp {
+    fill: rgb(31, 119, 180);
+    fill-opacity: .25;
+    stroke: rgb(31, 119, 180);
+    stroke-width: 1px;
     }
 
-    .leaf circle {
-        fill: #ff7f0e;
-        fill-opacity: 1;
+    .leaf circle.cp {
+    fill: #ff7f0e;
+    fill-opacity: 1;
     }
 
     text {
-        font: 10px sans-serif;
+    font: 10px sans-serif;
     }
 
 </style>
@@ -29,84 +29,72 @@
 <!--
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>-->
 <script>
-    ordinalColors = d3.scale.category20b();
-    rainbowColors = d3.scale.cubehelix()
-            .domain([0, 10])
-            .range([
-                d3.hsl(-100, 0.75, 0.35),
-                d3.hsl(80, 1.50, 0.80),
-                d3.hsl(260, 0.75, 0.35)
-            ]);
-    var radius = function (d) {
-        var size = 0;
-        if (d.statistics != null && d.statistics.methods != null) {
-            size = scale * (1 + Math.pow(d.statistics.methods + d.statistics.fields, 2 / 5));
-        } else if (d.children != null && d.children.length > 0) {
-            size = 3.5;
+ordinalColors = d3.scale.category20b();
+rainbowColors = d3.scale.cubehelix()
+        .domain([0, 21])
+        .range([
+          d3.hsl(-100, 0.75, 0.35),
+          d3.hsl(  80, 1.50, 0.80),
+          d3.hsl( 260, 0.75, 0.35)
+        ]);
+var radius = function (d) {
+    var size = 0;
+    if (d.statistics != null && d.statistics.methods != null) {
+        size = scale * (1 + Math.pow(d.statistics.methods + d.statistics.fields, 2 / 5));
+    } else if (d.children != null && d.children.length > 0) {
+        size = 3.5;
+    }
+    if (size == null || size == 0) {
+        size = 1;
+    }
+    return size;
+};
+
+var diameter = 3000,
+    format = d3.format(",d");
+var scale = 1;
+var pack = d3.layout.pack()
+    .size([diameter - 4, diameter - 4])
+    .children(function(d) { return d.children!=null && d.children.length > 0?d.children:null; })
+    .value(function(d) { return radius(d); });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", diameter)
+    .attr("height", diameter)
+  .append("g")
+    .attr("transform", "translate(2,2)");
+
+d3.json("camel-full.json", function(error, root) {
+  if (error) throw error;
+
+  var node = svg.datum(root.data).selectAll(".node")
+      .data(pack.nodes)
+    .enter().append("g")
+      .attr("class", function(d) { return d.children!=null && d.children.length>0 ? "cp inter node" : "cp leaf node"; })
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+  node.append("title")
+      .text(function(d) { return d.name + (d.children ? "" : ": " + format(d.size)); });
+
+  node.append("circle")
+      .attr("r", function(d) { return d.r; })
+      .attr("class", "cp")
+      .style("fill", function color(d) {
+        if (d.color) {
+          return rainbowColors(d.color);
+        } else {
+          return "#FFFFFF";
         }
-        if (size == null || size == 0) {
-            size = 1;
-        }
-        return size;
-    };
-
-    var diameter = 3000,
-            format = d3.format(",d");
-    var scale = 1;
-    var pack = d3.layout.pack()
-            .size([diameter - 4, diameter - 4])
-            .children(function (d) {
-                return d.children != null && d.children.length > 0 ? d.children : null;
-            })
-            .value(function (d) {
-                return radius(d);
-            });
-
-    var svg = d3.select("body").append("svg")
-            .attr("width", diameter)
-            .attr("height", diameter)
-            .append("g")
-            .attr("transform", "translate(2,2)");
-
-    d3.json("lmsappUextint.json", function (error, root) {
-        if (error) throw error;
-
-        var node = svg.datum(root.data).selectAll(".node")
-                .data(pack.nodes)
-                .enter().append("g")
-                .attr("class", function (d) {
-                    return d.children != null && d.children.length > 0 ? "node" : "leaf node";
-                })
-                .attr("transform", function (d) {
-                    return "translate(" + d.x + "," + d.y + ")";
-                });
-
-        node.append("title")
-                .text(function (d) {
-                    return d.name + (d.children ? "" : ": " + format(d.size));
-                });
-
-        node.append("circle")
-                .attr("r", function (d) {
-                    return d.r;
-                })
-                .style("fill", function color(d) {
-                    if (d.color) {
-                        return rainbowColors(d.color);
-                    } else {
-                        return "#FFFFFF";
-                    }
-                });
-
-        node.filter(function (d) {
-            return !d.children;
-        }).append("text")
-                .attr("dy", ".3em")
-                .style("text-anchor", "middle")
-            /*.text(function(d) { return d.name.substring(0, d.r / 3); })*/;
     });
 
-    d3.select(self.frameElement).style("height", diameter + "px");
+  node.filter(function(d) { return !d.children; }).append("text")
+      .attr("dy", ".3em")
+      .style("text-anchor", "middle")
+      /*.text(function(d) { return d.name.substring(0, d.r / 3); })*/;
+});
+
+d3.select(self.frameElement).style("height", diameter + "px");
+
 
 
 </script>
