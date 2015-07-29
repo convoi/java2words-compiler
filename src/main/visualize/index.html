@@ -2,6 +2,10 @@
 <html ng-app="rainbowApp">
 <head>
     <script type="text/javascript" src="js/d3.min.js"></script>
+    <script type="text/javascript" src="js/d3.geom.js"></script>
+    <script type="text/javascript" src="js/d3.layout.js"></script>
+    <script type="text/javascript" src="js/CodeFlower.js"></script>
+
     <script src="js/angular.min.js"></script>
 
     <script type="text/javascript" src="js/angular-tree-control.js"></script>
@@ -15,38 +19,59 @@
 </head>
 <body>
 
-<h1>Rainbow packages</h1>
-
-<h2>Select your project and metrics</h2>
-
 <div ng-controller="RainbowController as rainbow">
 
-    <select ng-model="rainbow.selectedProject"
-            ng-options="value.id as value.label for value in rainbow.selectableProjects track by value.id"
-            ng-change="rainbow.initializeProject()">
-    </select>
+    <div ng-if="!rainbow.visualize">
 
-    <div ng-if="rainbow.selectedProject != 0">
-        <h3>Please select your size metric</h3>
+        <h1>Rainbow packages</h1>
 
-        <select ng-model="rainbow.selectedSizeMetric"
-                ng-options="value.id as value.label for value in rainbow.selectableSizeMetrics track by value.id">
+        <h2>Select your project and metrics</h2>
+
+        <select ng-model="rainbow.selectedProjectId"
+                ng-options="value.id as value.label for value in rainbow.selectableProjects track by value.id"
+                ng-change="rainbow.initializeProject()">
         </select>
 
+        <div ng-if="rainbow.selectedProjectId != 0">
+            <h3>Please select your size metric</h3>
+
+            <select ng-model="rainbow.selectedSizeMetric"
+                    ng-options="value.id as value.label for value in rainbow.selectableSizeMetrics track by value.id">
+            </select>
+
+            <h3>Full representation or just a part of the project?</h3>
+            <p>Please only select directories, not files.</p>
+
+            <button ng-click="rainbow.toggleTreeNodeView()">
+                Show/Hide selection
+            </button>
+
+            <!-- as a Dom element -->
+            <treecontrol class="tree-classic"
+                         tree-model="rainbow.dataForTheTree"
+                         options="rainbow.treeOptions"
+                         on-selection="rainbow.showSelected(node)"
+                         ng-if="rainbow.showTreeNodeView">
+                {{ node.name }}
+            </treecontrol>
+
+            <br />
+            Selected: {{ rainbow.selectedPackage.name }}
+
+            <h3>Ready - Set - Go</h3>
+
+            <button ng-click="rainbow.toggleVisualization()">
+                Show visualization
+            </button>
+        </div>
     </div>
 
-    <div>
-        <h3>Full representation or just a part of the project?</h3>
 
-        <!-- as a Dom element -->
-        <treecontrol class="tree-classic"
-                     tree-model="rainbow.dataForTheTree"
-                     options="rainbow.treeOptions"
-                     on-selection="rainbow.showSelected(node)">
-            {{ node.name }}
-        </treecontrol>
-
-        <h1>{{rainbow.selectedPackage}}</h1>
+    <div ng-show="rainbow.visualize">
+        <button ng-click="rainbow.toggleVisualization()">
+            Back to selection
+        </button>
+        <div id="visualization"></div>
     </div>
 
 

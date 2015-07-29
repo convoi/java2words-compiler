@@ -1,61 +1,97 @@
+var scale = 1.3;
+var radius = function(d) {
+    var size = 0;
+    if (d.statistics!= null && d.statistics.methods != null) {
+        size = scale*(1+Math.pow(d.statistics.methods+d.statistics.fields, 2/5));
+    } else if (d.children != null && d.children.length > 0) {
+        size = 3.5;
+    }
+    if (size == null || size == 0) {
+        size = 1;
+    }
+    return size;
+};
+
 angular.module('rainbowApp', ['treeControl'])
-    .controller('RainbowController', function() {
+    .controller('RainbowController', function () {
 
         var rainbow = this;
 
+        rainbow.visualize = false;
+        rainbow.myFlower = null;
+
+        rainbow.toggleVisualization = function () {
+            rainbow.visualize = !rainbow.visualize;
+
+            if (rainbow.visualize) {
+                rainbow.myFlower = new CodeFlower("#visualization", 3000, 3000);
+                rainbow.myFlower.update(rainbow.selectedPackage);
+            } else {
+                rainbow.myFlower = null;
+            }
+        };
+
+
         rainbow.selectableProjects = [{
             id: 1,
-            label: 'camel'
+            label: 'camel.json'
         }, {
             id: 2,
-            label: 'test'
+            label: 'test TODO'
         }, {
             id: 3,
-            label: 'data-hierarchical'
+            label: 'data-hierarchical TODO'
         }];
 
-        rainbow.selectedProject = 0;
+        rainbow.selectedProjectId = 0;
 
-        rainbow.initializeProject = function() {
-            console.log(rainbow.selectedProject);
+        rainbow.initializeProject = function () {
+            var selectedProject = rainbow.searchSelectedProjectById(rainbow.selectedProjectId);
 
-            if (rainbow.selectedProject != 0) {
-                d3.json('camel.json', function(error, data) {
-                    rainbow.getSelectableSizeMetrics(data);
-                    rainbow.updateTree(data);
+            if (rainbow.selectedProjectId != 0) {
+                d3.json(selectedProject.label, function (error, resultJson) {
+                    rainbow.getSelectableSizeMetrics(resultJson.meta);
+                    rainbow.updateTree(resultJson.data);
                 });
-
             } else {
                 console.log("No project selected - reset all");
                 rainbow.selectAll();
             }
         };
 
+        rainbow.searchSelectedProjectById = function (id) {
+            for (var i = 0; i < rainbow.selectableProjects.length; i++) {
+                if (rainbow.selectableProjects[i].id == id) {
+                    return rainbow.selectableProjects[i];
+                }
+            }
+
+            return 0;
+        };
+
         rainbow.selectableSizeMetrics = [];
         rainbow.selectedSizeMetric = 0;
 
-        rainbow.getSelectableSizeMetrics = function() {
-            // TODO get data from json
-            rainbow.selectableSizeMetrics = [{
-                id: 1,
-                label: 'LOC'
-            }, {
-                id: 2,
-                label: 'Fields'
-            }, {
-                id: 3,
-                label: 'params'
-            }];
+        rainbow.getSelectableSizeMetrics = function (metaData) {
+            rainbow.selectableSizeMetrics = [];
+            for (var i = 0; i < metaData.metrics.length; i++) {
+                var metric = {};
+                // to keep 0 as default or not selected id
+                metric.id = i + 1;
+                metric.label = metaData.metrics[i];
+
+                rainbow.selectableSizeMetrics.push(metric);
+            }
         };
 
-        rainbow.resetAll = function() {
+        rainbow.resetAll = function () {
             rainbow.selectableSizeMetrics = [];
             rainbow.selectedSizeMetric = 0;
         };
 
         rainbow.selectedPackage;
 
-        rainbow.showSelected = function(node) {
+        rainbow.showSelected = function (node) {
             rainbow.selectedPackage = node;
         };
 
@@ -76,11 +112,18 @@ angular.module('rainbowApp', ['treeControl'])
 
         rainbow.dataForTheTree;
 
-        rainbow.updateTree = function(data) {
+        rainbow.updateTree = function (data) {
             var treeData = data;
             // TODO removeLeafNodes does not work
             //rainbow.removeLeafNodes(treeData);
             rainbow.dataForTheTree = treeData;
+            rainbow.selectedPackage = treeData;
+        };
+
+        rainbow.showTreeNodeView = false;
+
+        rainbow.toggleTreeNodeView = function () {
+            rainbow.showTreeNodeView = !rainbow.showTreeNodeView;
         };
 
         //rainbow.removeLeafNodes = function(node) {
