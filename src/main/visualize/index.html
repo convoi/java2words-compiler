@@ -63,6 +63,19 @@
             <button ng-click="rainbow.toggleVisualization()">
                 Show visualization
             </button>
+
+            <h3>Table view</h3>
+
+            <table>
+                <tr>
+                    <td>Name</td>
+                    <td>Class</td>
+                </tr>
+                <tr ng-repeat="item in rainbow.tableViewData">
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.color }}</td>
+                </tr>
+            </table>
         </div>
     </div>
 

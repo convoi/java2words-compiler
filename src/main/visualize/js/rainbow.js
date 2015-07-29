@@ -1,3 +1,16 @@
+var sort_by = function(field, reverse, primer){
+
+    var key = primer ?
+        function(x) {return primer(x[field])} :
+        function(x) {return x[field]};
+
+    reverse = !reverse ? 1 : -1;
+
+    return function (a, b) {
+        return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+    }
+};
+
 var scale = 1.3;
 var radius = function(d) {
     var size = 0;
@@ -93,6 +106,8 @@ angular.module('rainbowApp', ['treeControl'])
 
         rainbow.showSelected = function (node) {
             rainbow.selectedPackage = node;
+
+            rainbow.updateTableView(node);
         };
 
         rainbow.treeOptions = {
@@ -117,7 +132,7 @@ angular.module('rainbowApp', ['treeControl'])
             // TODO removeLeafNodes does not work
             //rainbow.removeLeafNodes(treeData);
             rainbow.dataForTheTree = treeData;
-            rainbow.selectedPackage = treeData;
+            rainbow.showSelected(treeData);
         };
 
         rainbow.showTreeNodeView = false;
@@ -136,5 +151,24 @@ angular.module('rainbowApp', ['treeControl'])
         //        }
         //    }
         //};
+
+        rainbow.tableViewData = [];
+
+        rainbow.updateTableView = function (node) {
+            rainbow.tableViewData = [];
+
+            rainbow.updateTableViewRecursive(node);
+            rainbow.tableViewData.sort(sort_by('color', false, parseInt));
+        };
+
+        rainbow.updateTableViewRecursive = function (node) {
+            if (node.color != null) {
+                rainbow.tableViewData.push(node);
+            }
+
+            for(var i = 0; i < node.children.length; i++) {
+                rainbow.updateTableViewRecursive(node.children[i]);
+            }
+        };
 
     });
