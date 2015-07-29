@@ -1,26 +1,36 @@
 <!doctype html>
-<html ng-app="todoApp">
+<html ng-app="rainbowApp">
 <head>
     <script src="js/angular.min.js"></script>
     <script src="js/rainbow.js"></script>
     <link rel="stylesheet" href="css/rainbow.css">
 </head>
 <body>
-<h2>Todo</h2>
-<div ng-controller="TodoListController as todoList">
-    <span>{{todoList.remaining()}} of {{todoList.todos.length}} remaining</span>
-    [ <a href="" ng-click="todoList.archive()">archive</a> ]
-    <ul class="unstyled">
-        <li ng-repeat="todo in todoList.todos">
-            <input type="checkbox" ng-model="todo.done">
-            <span class="done-{{todo.done}}">{{todo.text}}</span>
-        </li>
-    </ul>
-    <form ng-submit="todoList.addTodo()">
-        <input type="text" ng-model="todoList.todoText"  size="30"
-               placeholder="add new todo here">
-        <input class="btn-primary" type="submit" value="add">
-    </form>
+
+<h1>Rainbow packages</h1>
+
+<h2>Select your project and metrics</h2>
+
+<div ng-controller="RainbowController as rainbow">
+
+    <select ng-model="rainbow.selectedProject"
+            ng-options="value.id as value.label for value in rainbow.selectableProjects track by value.id"
+            ng-change="rainbow.initializeProject()">
+    </select>
+
+    <div ng-if="rainbow.selectedProject != 0">
+        <h3>Please select your size metric</h3>
+
+        <select ng-model="rainbow.selectedSizeMetric"
+                ng-options="value.id as value.label for value in rainbow.selectableSizeMetrics track by value.id">
+        </select>
+
+        <!--<h3>Full representation or just a part of the project?</h3>-->
+
+    </div>
+
+
+
 </div>
 </body>
 </html>

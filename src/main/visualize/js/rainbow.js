@@ -1,28 +1,56 @@
-angular.module('todoApp', [])
-    .controller('TodoListController', function() {
-        var todoList = this;
-        todoList.todos = [
-            {text:'learn angular', done:true},
-            {text:'build an angular app', done:false}];
+angular.module('rainbowApp', [])
+    .controller('RainbowController', function() {
 
-        todoList.addTodo = function() {
-            todoList.todos.push({text:todoList.todoText, done:false});
-            todoList.todoText = '';
+        var rainbow = this;
+
+        rainbow.selectableProjects = [{
+            id: 1,
+            label: 'camel'
+        }, {
+            id: 2,
+            label: 'test'
+        }, {
+            id: 3,
+            label: 'data-hierarchical'
+        }];
+
+        rainbow.selectedProject = 0;
+
+        rainbow.initializeProject = function() {
+            console.log(rainbow.selectedProject);
+
+            if (rainbow.selectedProject != 0) {
+                // TODO get json data
+                var data;
+
+                rainbow.getSelectableSizeMetrics(data);
+            } else {
+                console.log("No project selected - reset all");
+                rainbow.selectAll();
+            }
         };
 
-        todoList.remaining = function() {
-            var count = 0;
-            angular.forEach(todoList.todos, function(todo) {
-                count += todo.done ? 0 : 1;
-            });
-            return count;
+        rainbow.getSelectableSizeMetrics = function() {
+            rainbow.selectableSizeMetrics = [{
+                id: 1,
+                label: 'LOC'
+            }, {
+                id: 2,
+                label: 'Fields'
+            }, {
+                id: 3,
+                label: 'params'
+            }];
         };
 
-        todoList.archive = function() {
-            var oldTodos = todoList.todos;
-            todoList.todos = [];
-            angular.forEach(oldTodos, function(todo) {
-                if (!todo.done) todoList.todos.push(todo);
-            });
+        rainbow.resetAll = function() {
+            rainbow.selectableSizeMetrics = [];
+            rainbow.selectedSizeMetric = 0;
         };
+
+        rainbow.selectableSizeMetrics = [];
+
+        rainbow.selectedSizeMetric = 0;
+
+
     });
