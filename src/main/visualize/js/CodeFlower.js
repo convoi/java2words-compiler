@@ -21,7 +21,7 @@ var CodeFlower = function(selector, w, h) {
     .size([h, w]);
 };
 
-CodeFlower.prototype.update = function(json, maxColorOrdinal) {
+CodeFlower.prototype.update = function(json) {
   this.ordinalColors = d3.scale.category20b();
 
   if (json) this.json = json;

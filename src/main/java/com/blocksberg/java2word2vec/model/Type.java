@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author jh
@@ -20,6 +21,8 @@ public class Type {
     private List<Method> methods;
     private List<Field> fields;
     private Integer clusterId;
+    private Type extendsType;
+    private Set<Type> annotatedBy;
 
     public Type(String name) {
         this.name = name;

@@ -4,7 +4,6 @@
 <script type="text/javascript" src="js/d3.geom.js"></script>
 <script type="text/javascript" src="js/d3.layout.js"></script>
 <script type="text/javascript" src="js/CodeFlower.js"></script>
-<script type="text/javascript" src="js/Rainbow.js"></script>
 <head>
     <meta charset="UTF-8">
     <title></title>
@@ -60,9 +59,7 @@
         return size;
     }
     d3.json('camel.json', function(error, data) {
-        var rainbow = new Rainbow(data);
-        var maxColorOrdinal = rainbow.getMaxColorOrdinal;
-        myFlower.update(data, maxColorOrdinal);
+        myFlower.update(data);
     });
 
 </script>
