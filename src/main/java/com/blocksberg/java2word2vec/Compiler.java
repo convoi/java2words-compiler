@@ -10,6 +10,7 @@ import com.blocksberg.java2word2vec.compilers.java7.Java7CompilerBundle;
 import com.blocksberg.java2word2vec.compilers.java7.Java7SemanticsBundle;
 import com.blocksberg.java2word2vec.compilers.java7.KnownTypesLibrary;
 import com.blocksberg.java2word2vec.compilers.java8.Java8CompilerBundle;
+import com.blocksberg.java2word2vec.model.Project;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -53,7 +54,8 @@ public class Compiler {
         System.out.printf("Output of running %s is:", Arrays.toString(args));
         File tempFile = runWord2Vec(fileName, word2vecPath, classes);
         updateTypeClasses(tempFile.toPath(), types);
-        createJsonOutput(jsonFileName, types);
+        createJsonOutput(jsonFileName, types, new Project(sourceDirs.get(0).getFileName().toString(), Arrays.asList
+                ("methods", "fields")));
 
 
     }
@@ -70,7 +72,6 @@ public class Compiler {
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
         String line;
-
 
 
         while ((line = br.readLine()) != null) {
@@ -159,7 +160,7 @@ public class Compiler {
 
     }*/
 
-    private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types)
+    private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types, Project project)
             throws IOException, WriterException {
         final PathWalker pathWalker = new PathWalker(0, ".");
         types.allTypes().forEach(t -> pathWalker.addPath(t.fullQualifiedName(), t.getClusterId(), t.getStatistics()));
@@ -172,7 +173,7 @@ public class Compiler {
 
         final RootTreeNode tree = pathWalker.getTree();
 
-        treeNodeJsonWriter.transformRootTreeToJson(jsonWriter, tree);
+        treeNodeJsonWriter.transformRootTreeToJson(jsonWriter, tree, project);
     }
 
 

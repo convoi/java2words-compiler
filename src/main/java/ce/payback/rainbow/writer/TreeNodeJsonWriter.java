@@ -22,14 +22,34 @@ package ce.payback.rainbow.writer;
 import ce.payback.rainbow.tree.RootTreeNode;
 import ce.payback.rainbow.tree.TreeNode;
 import ce.payback.rainbow.tree.ValueTreeNode;
+import com.blocksberg.java2word2vec.model.Project;
 
 import java.util.Map;
 
 public class TreeNodeJsonWriter {
 
-  public void transformRootTreeToJson(final JsonWriter jsonWriter, final RootTreeNode tree) throws WriterException {
+  public void transformRootTreeToJson(final JsonWriter jsonWriter, final RootTreeNode tree, Project project) throws
+          WriterException {
+    jsonWriter.beginObject();
+
+    addMeta(jsonWriter, project);
+    jsonWriter.name("data");
     this.transformTreeToJson(jsonWriter, tree);
+    jsonWriter.endObject();
     jsonWriter.close();
+  }
+
+  private void addMeta(JsonWriter jsonWriter, Project project) throws WriterException {
+    jsonWriter.name("meta");
+    jsonWriter.beginObject();
+    jsonWriter.name("metrics");
+    jsonWriter.beginArray();
+    for (String metric : project.getMetrics()) {
+      jsonWriter.value(metric);
+    }
+    jsonWriter.endArray();
+    jsonWriter.prop("project", project.getName());
+    jsonWriter.endObject();
   }
 
   private void transformTreeToJson(final JsonWriter jsonWriter, final TreeNode node) throws WriterException {
