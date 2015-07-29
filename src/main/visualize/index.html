@@ -21,34 +21,41 @@
 
 <div ng-controller="RainbowController as rainbow">
 
-    <select ng-model="rainbow.selectedProject"
+    <select ng-model="rainbow.selectedProjectId"
             ng-options="value.id as value.label for value in rainbow.selectableProjects track by value.id"
             ng-change="rainbow.initializeProject()">
     </select>
 
-    <div ng-if="rainbow.selectedProject != 0">
+    <div ng-if="rainbow.selectedProjectId != 0">
         <h3>Please select your size metric</h3>
 
         <select ng-model="rainbow.selectedSizeMetric"
                 ng-options="value.id as value.label for value in rainbow.selectableSizeMetrics track by value.id">
         </select>
 
-    </div>
-
-    <div>
         <h3>Full representation or just a part of the project?</h3>
+        <p>Please only select directories, not files.</p>
+
+        <button ng-click="rainbow.toggleTreeNodeView()">
+            Show/Hide selection
+        </button>
 
         <!-- as a Dom element -->
         <treecontrol class="tree-classic"
                      tree-model="rainbow.dataForTheTree"
                      options="rainbow.treeOptions"
-                     on-selection="rainbow.showSelected(node)">
+                     on-selection="rainbow.showSelected(node)"
+                     ng-if="rainbow.showTreeNodeView">
             {{ node.name }}
         </treecontrol>
 
-        <h1>{{rainbow.selectedPackage}}</h1>
-    </div>
+        <br />
+        Selected: {{ rainbow.selectedPackage.name }}
 
+        <h3>Ready - Set - Go</h3>
+
+        <a href="bubblepack.html" target="_blank">Show visualization</a>
+    </div>
 
 </div>
 </body>
