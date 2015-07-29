@@ -49,7 +49,12 @@ public class TreeNodeJsonWriter {
     if (node instanceof ValueTreeNode) {
       final ValueTreeNode valueNode = (ValueTreeNode) node;
       jsonWriter.prop("color", valueNode.getColorReferenceNumber());
-      jsonWriter.prop("size", valueNode.getSize());
+      jsonWriter.name("statistics");
+      jsonWriter.beginObject();
+      for (Map.Entry<String, Number> entry : valueNode.getStatistics().entrySet()) {
+          jsonWriter.prop(entry.getKey(), entry.getValue());
+      }
+      jsonWriter.endObject();
     }
   }
 
