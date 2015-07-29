@@ -134,6 +134,14 @@ angular.module('rainbowApp', ['treeControl'])
             rainbow.showSelected(data);
         };
 
+        rainbow.addFullyQualifiedName = function (node, path) {
+            node.name = path + "/" + node.name;
+
+            for(var i = 0; i < node.children.length; i++) {
+                rainbow.addFullyQualifiedName(node.children[i], path + "/" + node.name);
+            }
+        };
+
         rainbow.showTreeNodeView = false;
 
         rainbow.toggleTreeNodeView = function () {
