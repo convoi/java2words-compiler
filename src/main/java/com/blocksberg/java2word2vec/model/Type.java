@@ -4,13 +4,17 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
  * @author jh
  */
 public class Type {
+    private static final String METHODS = "methods";
+    private static final String FIELDS = "fields";
     private Multiset<Type> dependsOn;
     private String name;
     private List<Method> methods;
@@ -91,5 +95,12 @@ public class Type {
 
     public void setClusterId(int clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Map<String, Number> getStatistics() {
+        final HashMap<String, Number> statistics = new HashMap<>();
+        statistics.put(METHODS, methods.size());
+        statistics.put(FIELDS, fields.size());
+        return statistics;
     }
 }

@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -163,7 +162,7 @@ public class Compiler {
     private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types)
             throws IOException, WriterException {
         final PathWalker pathWalker = new PathWalker(0, ".");
-        types.allTypes().forEach(t -> pathWalker.addPath(t.fullQualifiedName(), t.getClusterId(), Collections.EMPTY_MAP));
+        types.allTypes().forEach(t -> pathWalker.addPath(t.fullQualifiedName(), t.getClusterId(), t.getStatistics()));
 
 
         final FileWriter fileWriter = new FileWriter(jsonFileName);

@@ -73,7 +73,7 @@ CodeFlower.prototype.update = function(json, maxColorOrdinal) {
   this.node.enter().append('svg:circle')
     .attr("class", "node")
     .classed('directory', function(d) { return (d._children || d.children) ? 1 : 0; })
-    .attr("r", function(d) { return d.children ? 3.5 : Math.pow(d.size, 2/5) || 1; })
+    .attr("r", function(d) { return radius(d);/*d.children ? 3.5 : Math.pow(d.size, 2/5) || 1;*/ })
     .style("fill", function color(d) {
         if (d.color) {
           return me.ordinalColors(d.color);
