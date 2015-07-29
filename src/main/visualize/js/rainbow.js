@@ -1,7 +1,36 @@
+var scale = 1.3;
+var radius = function(d) {
+    var size = 0;
+    if (d.statistics!= null && d.statistics.methods != null) {
+        size = scale*(1+Math.pow(d.statistics.methods+d.statistics.fields, 2/5));
+    } else if (d.children != null && d.children.length > 0) {
+        size = 3.5;
+    }
+    if (size == null || size == 0) {
+        size = 1;
+    }
+    return size;
+};
+
 angular.module('rainbowApp', ['treeControl'])
     .controller('RainbowController', function () {
 
         var rainbow = this;
+
+        rainbow.visualize = false;
+        rainbow.myFlower = null;
+
+        rainbow.toggleVisualization = function () {
+            rainbow.visualize = !rainbow.visualize;
+
+            if (rainbow.visualize) {
+                rainbow.myFlower = new CodeFlower("#visualization", 3000, 3000);
+                rainbow.myFlower.update(rainbow.selectedPackage);
+            } else {
+                rainbow.myFlower = null;
+            }
+        };
+
 
         rainbow.selectableProjects = [{
             id: 1,
