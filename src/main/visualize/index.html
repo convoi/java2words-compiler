@@ -1,7 +1,15 @@
 <!doctype html>
 <html ng-app="rainbowApp">
 <head>
+    <script type="text/javascript" src="js/d3.min.js"></script>
     <script src="js/angular.min.js"></script>
+
+    <script type="text/javascript" src="js/angular-tree-control.js"></script>
+    <!-- link for CSS when using the tree as a Dom element -->
+    <link rel="stylesheet" type="text/css" href="css/tree-control.css">
+    <!-- link for CSS when using the tree as an attribute -->
+    <link rel="stylesheet" type="text/css" href="css/tree-control-attribute.css">
+
     <script src="js/rainbow.js"></script>
     <link rel="stylesheet" href="css/rainbow.css">
 </head>
@@ -25,10 +33,21 @@
                 ng-options="value.id as value.label for value in rainbow.selectableSizeMetrics track by value.id">
         </select>
 
-        <!--<h3>Full representation or just a part of the project?</h3>-->
-
     </div>
 
+    <div>
+        <h3>Full representation or just a part of the project?</h3>
+
+        <!-- as a Dom element -->
+        <treecontrol class="tree-classic"
+                     tree-model="rainbow.dataForTheTree"
+                     options="rainbow.treeOptions"
+                     on-selection="rainbow.showSelected(node)">
+            {{ node.name }}
+        </treecontrol>
+
+        <h1>{{rainbow.selectedPackage}}</h1>
+    </div>
 
 
 </div>
