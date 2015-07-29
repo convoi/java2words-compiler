@@ -26,8 +26,8 @@ public class PathWalkerTest {
 
         final PathWalker underTest = new PathWalker(0);
 
-        underTest.addPath("src/main/java/Stefan.java", WHITE, createStatistics(SIZE_KEY, FIVE));
-        underTest.addPath("src/main/test/Steven.java", BLACK, createStatistics(SIZE_KEY, ONE));
+        underTest.addPath("src/main/java/Stefan.java", WHITE, createStatistics(SIZE_KEY, FIVE), 5);
+        underTest.addPath("src/main/test/Steven.java", BLACK, createStatistics(SIZE_KEY, ONE), 5);
 
         RootTreeNode result = underTest.getTree();
 

@@ -34,18 +34,19 @@ public class PathWalker {
     return this.root;
   }
 
-  public void addPath(final String path, final Integer colorReferenceNumber, final Map<String, Number> statistics) {
+  public void addPath(final String path, final Integer colorReferenceNumber, final Map<String, Number> statistics, int maxClasses) {
     final int id = getNextSequence();
     final String[] names = this.pathSeparator.split(path);
-
     TreeNode currentNode = this.root;
+    int chosenColor = colorReferenceNumber == null ? maxClasses + 1 : colorReferenceNumber +1;
 
     boolean isLastIndex;
     for (int i = 0; i < names.length; i = i + 1) {
       isLastIndex = (i == (names.length - 1));
       if (isLastIndex) {
         currentNode =
-          this.getOrCreateChild(currentNode, id, names[i], TreeNodeType.TREE, colorReferenceNumber, statistics);
+          this.getOrCreateChild(currentNode, id, names[i], TreeNodeType.TREE, chosenColor,
+                  statistics);
       } else {
         currentNode = this.getOrCreateGeneratedChild(currentNode, names[i]);
       }
