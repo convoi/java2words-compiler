@@ -12,10 +12,10 @@ var sort_by = function(field, reverse, primer){
 };
 
 var scale = 1.3;
-var radius = function(d) {
+var radius = function (d) {
     var size = 0;
-    if (d.statistics!= null && d.statistics.methods != null) {
-        size = scale*(1+Math.pow(d.statistics.methods+d.statistics.fields, 2/5));
+    if (d.statistics != null && d.statistics.methods != null) {
+        size = scale * (1 + Math.pow(d.statistics.methods + d.statistics.fields, 2 / 5));
     } else if (d.children != null && d.children.length > 0) {
         size = 3.5;
     }
@@ -128,11 +128,10 @@ angular.module('rainbowApp', ['treeControl'])
         rainbow.dataForTheTree;
 
         rainbow.updateTree = function (data) {
-            var treeData = data;
             // TODO removeLeafNodes does not work
             //rainbow.removeLeafNodes(treeData);
-            rainbow.dataForTheTree = treeData;
-            rainbow.showSelected(treeData);
+            rainbow.dataForTheTree = data;
+            rainbow.showSelected(data);
         };
 
         rainbow.showTreeNodeView = false;
@@ -157,17 +156,19 @@ angular.module('rainbowApp', ['treeControl'])
         rainbow.updateTableView = function (node) {
             rainbow.tableViewData = [];
 
-            rainbow.updateTableViewRecursive(node);
+            rainbow.updateTableViewRecursive(node, "");
             rainbow.tableViewData.sort(sort_by('color', false, parseInt));
         };
 
-        rainbow.updateTableViewRecursive = function (node) {
-            if (node.color != null) {
-                rainbow.tableViewData.push(node);
+        rainbow.updateTableViewRecursive = function (node, path) {
+            if (node.color != null && node.children.length == 0) {
+                var copyNode = JSON.parse(JSON.stringify(node));
+                copyNode.name = path + "/" + node.name;
+                rainbow.tableViewData.push(copyNode);
             }
 
             for(var i = 0; i < node.children.length; i++) {
-                rainbow.updateTableViewRecursive(node.children[i]);
+                rainbow.updateTableViewRecursive(node.children[i], path + "/" + node.name);
             }
         };
 
