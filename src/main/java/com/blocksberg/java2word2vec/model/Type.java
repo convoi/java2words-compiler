@@ -77,6 +77,10 @@ public class Type {
         StringBuilder stringBuilder = new StringBuilder();
         annotatedBy.forEach(a -> stringBuilder.append(name).append(" ").append("isAnnotatedBy").append(" ")
                 .append(a.fullQualifiedName()).append(" "));
+        if (extendsType != null) {
+            stringBuilder.append(name).append(" ").append("extends").append(" ").append(extendsType.fullQualifiedName
+                    ()).append(" ");
+        }
         fields.forEach(f -> stringBuilder.append(name).append(" ").append("hasField").append(" ").append(f.toString()
         ).append(" "));
         methods.forEach(m -> stringBuilder.append(name).append(" ").append("hasMethod").append(" ").append(m.toString()
@@ -117,5 +121,9 @@ public class Type {
 
     public Set<Type> getAnnotatedBy() {
         return annotatedBy;
+    }
+
+    public void setExtendsType(Type extendsType) {
+        this.extendsType = extendsType;
     }
 }
