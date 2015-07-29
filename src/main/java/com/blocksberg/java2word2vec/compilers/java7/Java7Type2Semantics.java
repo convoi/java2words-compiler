@@ -122,7 +122,16 @@ public class Java7Type2Semantics extends JavaBaseListener implements TypeCompile
     @Override
     public void enterClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
         List<String> annotations = getAnnotationsFromDeclaration(ctx.getParent());
-        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), annotations);
+        Optional<Type> extendsType = resolveOptionalType(ctx.type());
+        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), extendsType, annotations);
+    }
+
+    private Optional<Type> resolveOptionalType(JavaParser.TypeContext type) {
+        if (type != null) {
+            return Optional.of(resolveType(type.getText()));
+        } else {
+            return Optional.empty();
+        }
     }
 
     private List<String> getAnnotationsFromDeclaration(ParserRuleContext typeDeclarationContext) {
@@ -142,18 +151,20 @@ public class Java7Type2Semantics extends JavaBaseListener implements TypeCompile
     @Override
     public void enterInterfaceDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
         List<String> annotations = getAnnotationsFromDeclaration(ctx.getParent());
-        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), annotations);
+        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), Optional.empty(), annotations);
     }
 
     @Override
     public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
         List<String> annotations = getAnnotationsFromDeclaration(ctx.getParent());
-        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), annotations);
+        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), Optional.empty(), annotations);
     }
 
-    private void handleClassOrInterfaceDeclaration(String shortName, List<String> annotations) {
+    private void handleClassOrInterfaceDeclaration(String shortName, Optional<Type> extendsType,
+                                                   List<String> annotations) {
         final Type type = resolveType(shortName);
         annotations.forEach(a -> type.addAnnotation(resolveType(a)));
+        extendsType.ifPresent(e -> type.setExtendsType(e));
         typeStack.add(type);
     }
 
