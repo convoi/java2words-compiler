@@ -46,10 +46,11 @@ public class Compiler {
         final List<Path> sourceDirs = Arrays.asList(commandLine.getOptionValues("i")).stream().map(d -> new File(d)
                 .toPath()).collect(Collectors.toList());
         final String word2vecPath = commandLine.getOptionValue("w");
+        final List<String> excludes = Arrays.asList(commandLine.getOptionValues("e"));
 
         CompilerBundle compilerBundle = createParserFactory(commandLine.getOptionValue("m"));
         System.out.println("compile " + sourceDirs + " with " + compilerBundle.getClass().getSimpleName());
-        final KnownTypesLibrary types = compile(compiler, sourceDirs, compilerBundle);
+        final KnownTypesLibrary types = compile(compiler, sourceDirs, excludes, compilerBundle);
 
         System.out.printf("Output of running %s is:", Arrays.toString(args));
         File tempFile = runWord2Vec(fileName, word2vecPath, classes);
@@ -179,10 +180,10 @@ public class Compiler {
 
     private static KnownTypesLibrary compile(com.blocksberg.java2word2vec.compilers.Compiler compiler,
                                              List<Path> sourceDirs,
-                                             CompilerBundle compilerBundle) throws IOException {
+                                             List<String> excludes, CompilerBundle compilerBundle) throws IOException {
         sourceDirs.forEach(dir -> {
             try {
-                compiler.walk(dir, compilerBundle);
+                compiler.walk(dir, excludes, compilerBundle);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -219,6 +220,8 @@ public class Compiler {
                 "word2vec").build());
         options.addOption(Option.builder("c").longOpt("classes").hasArg(true).required(true).desc("number of " +
                 "classes").build());
+        options.addOption(Option.builder("e").longOpt("excludes").hasArg(true).required(false).desc("path elements to" +
+                " exclude").valueSeparator(' ').build());
         try {
 
             final CommandLine commandLine = new DefaultParser().parse(options, args);

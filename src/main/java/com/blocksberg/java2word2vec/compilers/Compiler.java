@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -42,16 +43,20 @@ public class Compiler {
      * compiles all matching files within dir with the compiler.
      *
      * @param dir
-     * @param compilerBundle
-     * @throws IOException
+     * @param excludes
+     *@param compilerBundle  @throws IOException
      */
-    public void walk(Path dir, CompilerBundle compilerBundle) throws IOException {
+    public void walk(Path dir, List<String> excludes, CompilerBundle compilerBundle) throws IOException {
+
         for (int pass = 0; pass < compilerBundle.numberOfPasses(); pass++) {
             System.out.println("running compilation pass " + pass);
             final int currentPass = pass;
-            final Stream<Path> pathStream = Files
+            Stream<Path> pathStream = Files
                     .walk(dir)
                     .filter(p -> p.toString().endsWith(".java"));
+            if (excludes != null && !excludes.isEmpty()) {
+                pathStream = pathStream.filter(p -> !p.toString().contains(excludes.get(0)));
+            }
             pathStream.forEach(p -> {
                 try {
                     compile(p, compilerBundle, currentPass);

@@ -37,7 +37,7 @@ angular.module('rainbowApp', ['treeControl'])
             label: 'camel.json'
         }, {
             id: 2,
-            label: 'test TODO'
+            label: 'camel-full.json'
         }, {
             id: 3,
             label: 'data-hierarchical TODO'
