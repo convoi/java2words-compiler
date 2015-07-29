@@ -55,6 +55,9 @@ public class KnownTypesRenderer extends JavaBaseListener implements TypeCompiler
         final Optional<Type>
                 typeInSamePackage = knownTypesLibrary.findTypeInPackages(Collections.singleton(packageName),
                 shortName);
+        if(!typeInSamePackage.isPresent()) {
+            return new Type(shortName);
+        }
         return typeInSamePackage.get();
     }
 

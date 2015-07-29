@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,34 +42,54 @@ public class Compiler {
         final String fileName = commandLine.getOptionValue("o");
         final String jsonFileName = commandLine.getOptionValue("j");
         final String classes = commandLine.getOptionValue("c");
+        final String cygwinBash = commandLine.getOptionValue("b", null);
         final com.blocksberg.java2word2vec.compilers.Compiler
                 compiler = new com.blocksberg.java2word2vec.compilers.Compiler(fileName);
         final List<Path> sourceDirs = Arrays.asList(commandLine.getOptionValues("i")).stream().map(d -> new File(d)
                 .toPath()).collect(Collectors.toList());
         final String word2vecPath = commandLine.getOptionValue("w");
-        final List<String> excludes = Arrays.asList(commandLine.getOptionValues("e"));
+        final List<String> excludes = getExcludes(commandLine);
 
         CompilerBundle compilerBundle = createParserFactory(commandLine.getOptionValue("m"));
         System.out.println("compile " + sourceDirs + " with " + compilerBundle.getClass().getSimpleName());
         final KnownTypesLibrary types = compile(compiler, sourceDirs, excludes, compilerBundle);
 
         System.out.printf("Output of running %s is:", Arrays.toString(args));
-        File tempFile = runWord2Vec(fileName, word2vecPath, classes);
+        File tempFile = runWord2Vec(fileName, word2vecPath, classes, cygwinBash);
         updateTypeClasses(tempFile.toPath(), types);
         createJsonOutput(jsonFileName, types, new Project(sourceDirs.get(0).getFileName().toString(), Arrays.asList
-                ("methods", "fields")));
+                ("methods", "fields")), Integer.parseInt(classes));
 
 
     }
 
-    private static File runWord2Vec(String fileName, String word2vecPath, String classes) throws IOException {
+    private static List<String> getExcludes(CommandLine commandLine) {
+        if(commandLine.getOptionValue("e") == null)
+            return Collections.EMPTY_LIST;
+        return Arrays.asList(commandLine.getOptionValues("e"));
+    }
+
+    private static File runWord2Vec(String fileName, String word2vecPath, String classes, String cygwinBash) throws IOException {
         File tempFile = File.createTempFile("neuronalNetwork", "out");
+        String replacedComand;
+        if(cygwinBash != null ){
+
+            final String commandToRun = word2vecPath + " " +
+                    "-train " + fileName + " -output " + tempFile.getAbsolutePath() +
+                    " -cbow 1 -size 200 -window 200 -negative 0 -hs 0 -sample 1e-5 -threads 20 -iter 30 -classes " +
+                    classes + "\"";
+
+            replacedComand = cygwinBash + " --login -c \"" + commandToRun.replace("\\",
+                    "/");
+        } else {
+            replacedComand = word2vecPath + " " +
+                    "-train " + fileName + " -output " + tempFile.getAbsolutePath() +
+                    " -cbow 1 -size 200 -window 5 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes " +
+                    "" + classes;
+        }
 
 
-        Process process = Runtime.getRuntime().exec(word2vecPath + " " +
-                "-train " + fileName + " -output " + tempFile.getAbsolutePath() +
-                " -cbow 1 -size 200 -window 5 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes " +
-                "" + classes);
+        Process process = Runtime.getRuntime().exec(replacedComand);
         InputStream is = process.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
@@ -161,10 +182,11 @@ public class Compiler {
 
     }*/
 
-    private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types, Project project)
+    private static void createJsonOutput(String jsonFileName, KnownTypesLibrary types, Project project, int maxClasses)
             throws IOException, WriterException {
         final PathWalker pathWalker = new PathWalker(0, ".");
-        types.allTypes().forEach(t -> pathWalker.addPath(t.fullQualifiedName(), t.getClusterId(), t.getStatistics()));
+        types.allTypes().forEach(t -> pathWalker.addPath(t.fullQualifiedName(), t.getClusterId(), t.getStatistics
+                (), maxClasses));
 
 
         final FileWriter fileWriter = new FileWriter(jsonFileName);
@@ -220,8 +242,11 @@ public class Compiler {
                 "word2vec").build());
         options.addOption(Option.builder("c").longOpt("classes").hasArg(true).required(true).desc("number of " +
                 "classes").build());
+        options.addOption(Option.builder("b").longOpt("cygwin").hasArg(true).required(false).desc("path to cygwin" +
+                " bash").build());
         options.addOption(Option.builder("e").longOpt("excludes").hasArg(true).required(false).desc("path elements to" +
                 " exclude").valueSeparator(' ').build());
+
         try {
 
             final CommandLine commandLine = new DefaultParser().parse(options, args);
