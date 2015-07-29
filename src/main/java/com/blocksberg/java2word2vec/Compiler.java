@@ -64,7 +64,7 @@ public class Compiler {
 
         Process process = Runtime.getRuntime().exec(word2vecPath + " " +
                 "-train " + fileName + " -output " + tempFile.getAbsolutePath() +
-                " -cbow 1 -size 200 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes " +
+                " -cbow 1 -size 200 -window 5 -negative 25 -hs 0 -sample 1e-4 -threads 20 -iter 15 -classes " +
                 "" + classes);
         InputStream is = process.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
