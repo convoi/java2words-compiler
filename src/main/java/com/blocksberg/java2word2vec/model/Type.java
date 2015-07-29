@@ -5,6 +5,7 @@ import com.google.common.collect.Multiset;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +29,7 @@ public class Type {
         this.name = name;
         fields = new ArrayList<>();
         methods = new ArrayList<>();
+        annotatedBy = new HashSet<>();
     }
 
     public Type(String packageName, String shortName) {
@@ -73,6 +75,8 @@ public class Type {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
+        annotatedBy.forEach(a -> stringBuilder.append(name).append(" ").append("isAnnotatedBy").append(" ")
+                .append(a.fullQualifiedName()).append(" "));
         fields.forEach(f -> stringBuilder.append(name).append(" ").append("hasField").append(" ").append(f.toString()
         ).append(" "));
         methods.forEach(m -> stringBuilder.append(name).append(" ").append("hasMethod").append(" ").append(m.toString()
@@ -105,5 +109,13 @@ public class Type {
         statistics.put(METHODS, methods.size());
         statistics.put(FIELDS, fields.size());
         return statistics;
+    }
+
+    public void addAnnotation(Type type) {
+        annotatedBy.add(type);
+    }
+
+    public Set<Type> getAnnotatedBy() {
+        return annotatedBy;
     }
 }

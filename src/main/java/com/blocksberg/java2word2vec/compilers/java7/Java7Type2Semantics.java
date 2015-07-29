@@ -8,6 +8,7 @@ import com.blocksberg.java2word2vec.grammar.JavaParser;
 import com.blocksberg.java2word2vec.model.Field;
 import com.blocksberg.java2word2vec.model.Method;
 import com.blocksberg.java2word2vec.model.Type;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -120,21 +121,39 @@ public class Java7Type2Semantics extends JavaBaseListener implements TypeCompile
 
     @Override
     public void enterClassDeclaration(JavaParser.ClassDeclarationContext ctx) {
-        handleClassOrInterfaceDeclaration(ctx.Identifier().getText());
+        List<String> annotations = getAnnotationsFromDeclaration(ctx.getParent());
+        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), annotations);
+    }
+
+    private List<String> getAnnotationsFromDeclaration(ParserRuleContext typeDeclarationContext) {
+        List<JavaParser.ClassOrInterfaceModifierContext> modifierContext = null;
+        if (typeDeclarationContext instanceof JavaParser.TypeDeclarationContext) {
+            modifierContext = ((JavaParser.TypeDeclarationContext) typeDeclarationContext).classOrInterfaceModifier();
+        }
+        List<String> annotations = Collections.emptyList();
+        if (modifierContext != null) {
+            annotations = modifierContext.stream()
+                    .filter(m -> m.annotation() != null)
+                    .map(a -> a.annotation().annotationName().getText()).collect(Collectors.toList());
+        }
+        return annotations;
     }
 
     @Override
     public void enterInterfaceDeclaration(JavaParser.InterfaceDeclarationContext ctx) {
-        handleClassOrInterfaceDeclaration(ctx.Identifier().getText());
+        List<String> annotations = getAnnotationsFromDeclaration(ctx.getParent());
+        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), annotations);
     }
 
     @Override
     public void enterEnumDeclaration(JavaParser.EnumDeclarationContext ctx) {
-        handleClassOrInterfaceDeclaration(ctx.Identifier().getText());
+        List<String> annotations = getAnnotationsFromDeclaration(ctx.getParent());
+        handleClassOrInterfaceDeclaration(ctx.Identifier().getText(), annotations);
     }
 
-    private void handleClassOrInterfaceDeclaration(String shortName) {
+    private void handleClassOrInterfaceDeclaration(String shortName, List<String> annotations) {
         final Type type = resolveType(shortName);
+        annotations.forEach(a -> type.addAnnotation(resolveType(a)));
         typeStack.add(type);
     }
 

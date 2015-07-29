@@ -41,6 +41,12 @@ public class JavaTypeScanner extends JavaBaseListener implements TypeCompiler {
         addClassOrInterface(shortName);
     }
 
+    @Override
+    public void enterAnnotationTypeDeclaration(JavaParser.AnnotationTypeDeclarationContext ctx) {
+        String shortName = ctx.Identifier().getText();
+        addClassOrInterface(shortName);
+    }
+
     private void addClassOrInterface(String shortName) {
         knownTypesLibrary.addType(new Type(packageName + "." + shortName));
     }

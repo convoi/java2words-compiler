@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -42,7 +43,7 @@ public class Java7CompilerTest {
         final Java7CompilerBundle compilerBundle = new Java7CompilerBundle();
         final File outFile = temporaryFolder.newFile();
         final Compiler compiler = new Compiler(outFile.toPath().toString());
-        compiler.walk(path, compilerBundle);
+        compiler.walk(path, Collections.emptyList(), compilerBundle);
         compiler.close();
         final String output = new String(Files.readAllBytes(outFile.toPath())).trim();
         final String expectedOutput = new String(Files.readAllBytes(path.resolve("outfile"))).replace('\n', ' ').trim();
