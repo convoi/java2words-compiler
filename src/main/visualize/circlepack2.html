@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    .node {
+    cursor: pointer;
+    }
+
+    .node:hover {
+    stroke: #000;
+    stroke-width: 1.5px;
+    }
+
+    .node--leaf {
+    fill: white;
+    }
+
+    .label {
+    font: 11px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    text-anchor: middle;
+    text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 -1px 0 #fff;
+    }
+
+    .label,
+    .node--root,
+    .node--leaf {
+    //pointer-events: none;
+    }
+
+    .d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+    pointer-events: none;
+    }
+
+    /* Creates a small triangle extender for the tooltip */
+    .d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 10px;
+    width: 100%;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.8);
+    position: absolute;
+    pointer-events: none;
+    }
+
+    /* Northward tooltips */
+    .d3-tip.n:after {
+    content: "\25BC";
+    margin: -1px 0 0 0;
+    top: 100%;
+    left: 0;
+    text-align: center;
+    }
+
+    /* Eastward tooltips */
+    .d3-tip.e:after {
+    content: "\25C0";
+    margin: -4px 0 0 0;
+    top: 50%;
+    left: -8px;
+    }
+
+    /* Southward tooltips */
+    .d3-tip.s:after {
+    content: "\25B2";
+    margin: 0 0 1px 0;
+    top: -8px;
+    left: 0;
+    text-align: center;
+    }
+
+    /* Westward tooltips */
+    .d3-tip.w:after {
+    content: "\25B6";
+    margin: -4px 0 0 -1px;
+    top: 50%;
+    left: 100%;
+    }
+
+</style>
+<body>
+<script src="js/d3.min.js"></script>
+<script type="text/javascript" src="js/d3.cubehelix.js"></script>
+<script type="text/javascript" src="js/d3.tooltip.js"></script>
+<script>
+var scale = 1;
+
+rainbowColors = d3.scale.cubehelix()
+            .domain([0, 11])
+            .range([
+                d3.hsl(-100, 0.75, 0.35),
+                d3.hsl(80, 1.50, 0.80),
+                d3.hsl(260, 0.75, 0.35)
+            ]);
+    var radius = function (d) {
+        var size = 0;
+        if (d.statistics != null && d.statistics.methods != null) {
+            size = scale * (1 + Math.pow(d.statistics.methods + d.statistics.fields, 2 / 5));
+        } else if (d.children != null && d.children.length > 0) {
+            size = 3.5;
+        }
+        if (size == null || size == 0) {
+            size = 1;
+        }
+        return size;
+    };
+
+function shortenText(d) {
+    var name = d.name;
+    for (i=name.length-1; i>=0; i--) {
+        if(name.charAt(i) == name.charAt(i).toUpperCase()) {
+            return name.substring(i);
+        }
+    }
+    return name;
+}
+
+var margin = 20,
+    diameter = 1200;
+
+var color = d3.scale.linear()
+    .domain([-1, 5])
+    .range(["hsl(152,80%,80%)", "hsl(228,30%,40%)"])
+    .interpolate(d3.interpolateHcl);
+
+var pack = d3.layout.pack()
+    .padding(2)
+    .size([diameter - margin, diameter - margin])
+    .value(function(d) { return radius(d); })
+
+var svg = d3.select("body").append("svg")
+    .attr("width", diameter)
+    .attr("height", diameter)
+  .append("g")
+    .attr("transform", "translate(" + diameter / 2 + "," + diameter / 2 + ")");
+
+
+// tooltip
+tip = d3.tip().attr('class', 'd3-tip').html(function(d) { return d.name; });
+
+
+d3.json("examples/lmsappUextint.json", function(error, meta) {
+  if (error) throw error;
+  var root = meta.data;
+  var focus = root,
+      nodes = pack.nodes(root),
+      view;
+
+  var circle = svg.selectAll("circle")
+      .data(nodes)
+    .enter().append("circle")
+      .attr("class", function(d) { return d.parent ? d.children && d.children.length >0 ? "node" : "node node--leaf" : "node node--root"; })
+      .style("fill", function(d) { return d.children && d.children.length > 0 ? color(d.depth) : rainbowColors(d.color); })
+      .on("click", function(d) { if (focus !== d) zoom(d), d3.event.stopPropagation(); });
+
+
+
+  var text = svg.selectAll("text")
+      .data(nodes)
+    .enter().append("text")
+      .attr("class", "label")
+      .style("fill-opacity", function(d) { return d.parent === root ? 1 : 0; })
+      .style("display", function(d) { return d.parent === root ? null : "none"; })
+      .text(function(d) { return shortenText(d) });
+
+
+  svg.call(tip)
+
+  var node = svg.selectAll("circle,text");
+
+  circle.on('mouseover', tip.show)
+      .on('mouseout', tip.hide);
+
+  d3.select("body")
+      .style("background", color(-1))
+      .on("click", function() { zoom(root); });
+
+  zoomTo([root.x, root.y, root.r * 2 + margin]);
+
+  function zoom(d) {
+    var focus0 = focus; focus = d;
+
+    var transition = d3.transition()
+        .duration(d3.event.altKey ? 7500 : 750)
+        .tween("zoom", function(d) {
+          var i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2 + margin]);
+          return function(t) { zoomTo(i(t)); };
+        });
+
+    transition.selectAll("text")
+      .filter(function(d) { return d.parent === focus || this.style.display === "inline"; })
+        .style("fill-opacity", function(d) { return d.parent === focus ? 1 : 0; })
+        .each("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
+        .each("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
+  }
+
+  function zoomTo(v) {
+    var k = diameter / v[2]; view = v;
+    node.attr("transform", function(d) { return "translate(" + (d.x - v[0]) * k + "," + (d.y - v[1]) * k + ")"; });
+    circle.attr("r", function(d) { return d.r * k; });
+  }
+});
+
+d3.select(self.frameElement).style("height", diameter + "px");
+
+
+</script>
